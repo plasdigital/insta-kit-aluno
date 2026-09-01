@@ -1,0 +1,562 @@
+{
+  "name": "Importar Posts Instagram",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        512,
+        880
+      ],
+      "id": "700d5d18-5996-4c48-898f-ed25609b66b9",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.instagram.com/v23.0/me/media",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,like_count,comments_coun"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        784,
+        880
+      ],
+      "id": "55ba3ffd-5b31-46ca-ba70-4213b1734b68",
+      "name": "Get Posts ID",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        992,
+        880
+      ],
+      "id": "97a961bd-9565-4b7f-aada-dbbe979ff34c",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f665c962-3939-4955-956f-1184734be2af",
+              "leftValue": "={{ $json.media_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1216,
+        880
+      ],
+      "id": "9e16ea51-1f63-4c07-9057-eda467895400",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1536,
+        880
+      ],
+      "id": "f6ed25d1-a4d2-498a-a06f-799f8fbaa69f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "<SUA_TABELA_NOCODB>",
+        "table": "<SUA_TABELA_NOCODB>",
+        "options": {
+          "where": "=(post_id,eq,{{ $json.id }})"
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        1744,
+        896
+      ],
+      "id": "6d254f9a-898e-4b52-97af-cc899802ffa8",
+      "name": "Get many rows",
+      "alwaysOutputData": true,
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b26de540-510d-4dc1-92d7-98472b7e06c5",
+              "leftValue": "={{ $json.Id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1936,
+        896
+      ],
+      "id": "2e79c30b-cc39-41db-b3ff-08f0f0cbd78f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "717a2bfc-55ac-4e4b-bfa6-4b43a63c0c52",
+              "leftValue": "={{ $('Loop Over Items').item.json.media_type }}",
+              "rightValue": "VIDEO",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2112,
+        880
+      ],
+      "id": "752d34f7-5e8b-4519-9afc-b907a06c0d41",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Loop Over Items').item.json.media_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        944
+      ],
+      "id": "5bbeab19-0934-4cda-b736-fb86dcba1c9c",
+      "name": "Get Image1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Loop Over Items').item.json.thumbnail_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        784
+      ],
+      "id": "b6bffaed-a0f3-48b4-8e42-c40c0824374a",
+      "name": "Get Image Video"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "<SUA_TABELA_NOCODB>",
+        "table": "<SUA_TABELA_NOCODB>",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "post_id",
+              "fieldValue": "={{ $('Loop Over Items').item.json.id }}"
+            },
+            {
+              "fieldName": "media",
+              "binaryData": true,
+              "binaryProperty": "data"
+            },
+            {
+              "fieldName": "caption",
+              "fieldValue": "={{ $('Loop Over Items').item.json.caption }}"
+            },
+            {
+              "fieldName": "link",
+              "fieldValue": "={{ $('Loop Over Items').item.json.permalink }}"
+            },
+            {
+              "fieldName": "type",
+              "fieldValue": "={{ $('Loop Over Items').item.json.media_type }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        2496,
+        880
+      ],
+      "id": "30b34744-12dc-4a60-a49c-264b024515d9",
+      "name": "Create a row",
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.paging.next }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        1136
+      ],
+      "id": "47f58009-0b63-4fd5-aaa5-2d6e902f38a1",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Uazapi <SEU NOME> Lucas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "385361a2-79e3-42ca-b4ee-c7a74aa964ba",
+              "leftValue": "={{ $json.paging.next }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        1152
+      ],
+      "id": "36a502ba-12ef-4de1-8739-769692e33ca9",
+      "name": "Next"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        1168
+      ],
+      "id": "071f5fa6-5743-4dfb-9054-94846695bd13",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        1168
+      ],
+      "id": "bc362373-eddf-42fa-ad30-4e43835fcaca",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "content": "## Importar Posts Instagram\n\nRoda **na mao** (botao Execute workflow). Le os posts da conta pela Graph API e cria uma linha por post na tabela do NocoDB `<SUA_TABELA_NOCODB>` — a mesma que o **Agente Comentarios Instagram** consulta.\n\nSaiu de dentro do fluxo `Comentarios Instagram` em 27/ago/2026: nao tem nada a ver com receber webhook, e enchia aquele canvas de 51 nos.\n\n⚠️ A linha nasce **sem `key_word`** — post sem palavra-chave preenchida nao dispara DM nenhuma.",
+        "height": 380,
+        "width": 460,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        -160
+      ],
+      "id": "c1000000-0000-4000-8000-0000000000ff",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Posts ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Posts ID": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get Image Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image1": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image Video": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,828 @@
+{
+  "name": "Comentarios Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "instagram-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e03992b3-f6cb-4740-9dfe-0169b849cb06",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "481fb67a-c3e2-4a87-8f81-ce8c67a09e61",
+              "name": "aa",
+              "value": "={{ $json.query['hub.challenge'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "26bcc689-5e20-484b-a501-02cff07bb76c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.aa }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "6e2e4c75-a807-4612-beb4-f7556913a288",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "path": "instagram-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -352
+      ],
+      "id": "f2783034-9d49-4aa1-a6cc-d4492a66231d",
+      "name": "Instagram Get",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Verificação",
+        "height": 220,
+        "width": 1220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "212787a9-0d68-44f9-8708-de62ba66432e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        880,
+        16
+      ],
+      "id": "907ea041-b050-432e-865b-1a99b2b9b96f",
+      "name": "Instagram Post"
+    },
+    {
+      "parameters": {
+        "content": "## Produção",
+        "height": 400,
+        "width": 1520
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "5a8d5ae5-af62-4ea5-ad10-357213d7e975",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f785467-640e-4880-8f14-881fd1911d17",
+              "name": "meu_id",
+              "value": "={{ $json.body.entry[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "339f29fa-d93f-4ee6-935f-32c30e38862d",
+              "name": "sender_id",
+              "value": "={{ $json.body.entry[0].messaging[0].sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d914ae8-7a2a-4efb-9115-5c5caaaf4c85",
+              "name": "recipient_id",
+              "value": "={{ $json.body.entry[0].messaging[0].recipient.id }}",
+              "type": "string"
+            },
+            {
+              "id": "af722b9e-2aa1-40af-8969-7c493fdafe5b",
+              "name": "message_id",
+              "value": "={{ $json.body.entry[0].messaging[0].message.mid }}",
+              "type": "string"
+            },
+            {
+              "id": "5d520b24-db78-4972-bf36-5a037e1bfebc",
+              "name": "message_text",
+              "value": "={{ $json.body.entry[0].messaging[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "b1f0aa77-3c2e-4d55-9a11-0d7c5e6a9f12",
+              "name": "quick_reply_payload",
+              "value": "={{ $json.body.entry[0].messaging[0].message.quick_reply?.payload || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "v2-is-echo",
+              "name": "is_echo",
+              "type": "boolean",
+              "value": "={{ $json.body.entry[0].messaging[0].message.is_echo === true }}"
+            },
+            {
+              "id": "v2-anexo-tipo",
+              "name": "attachment_type",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].messaging[0].message.attachments?.[0]?.type || 'text' }}"
+            },
+            {
+              "id": "v2-anexo-url",
+              "name": "attachment_url",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].messaging[0].message.attachments?.[0]?.payload?.url || '' }}"
+            },
+            {
+              "id": "v2-username",
+              "name": "username",
+              "type": "string",
+              "value": "={{ $json.body.entry[0].messaging[0].sender?.username || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        112
+      ],
+      "id": "5ca6cb89-fb78-48e3-87bf-9731170d0a48",
+      "name": "Set Direct"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6cf7742b-8808-4b8c-97a3-6045db58ef75",
+              "name": "meu_id",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "ea96d097-c246-45c9-adc2-f4abeed4b23a",
+              "name": "from_id",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.from.id }}",
+              "type": "string"
+            },
+            {
+              "id": "544c3c05-d86a-4edc-980b-05a3810b436e",
+              "name": "from_username",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.from.username }}",
+              "type": "string"
+            },
+            {
+              "id": "3f5d3da6-516d-48c5-8b24-f07297923da7",
+              "name": "post_id",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.media.id }}",
+              "type": "string"
+            },
+            {
+              "id": "173c72ea-2632-41ce-bae4-99c82e9b7f8e",
+              "name": "post_posicionamento",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.media.media_product_type }}",
+              "type": "string"
+            },
+            {
+              "id": "68bdefc4-f56b-4a01-87c2-23fe6da142a1",
+              "name": "comment_id",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.id }}",
+              "type": "string"
+            },
+            {
+              "id": "0e69e7ed-b54b-4ce8-8066-2c8195e3478c",
+              "name": "comment_text",
+              "value": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        900,
+        -160
+      ],
+      "id": "76ca30a9-330a-4b34-9344-162976b5fe32",
+      "name": "Extrai Comentario"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "<ID_DO_SEU_FLUXO_agente-comentarios>",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "meu_id": "={{ $json.meu_id }}",
+            "from_id": "={{ $json.from_id }}",
+            "from_username": "={{ $json.from_username }}",
+            "post_id": "={{ $json.post_id }}",
+            "post_posicionamento": "={{ $json.post_posicionamento }}",
+            "comment_id": "={{ $json.comment_id }}",
+            "comment_text": "={{ $json.comment_text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "meu_id",
+              "displayName": "meu_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "from_id",
+              "displayName": "from_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "from_username",
+              "displayName": "from_username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "post_id",
+              "displayName": "post_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "post_posicionamento",
+              "displayName": "post_posicionamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "comment_id",
+              "displayName": "comment_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "comment_text",
+              "displayName": "comment_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -160
+      ],
+      "id": "1c2334fe-6974-474e-8711-14e6c9a09da6",
+      "name": "Chama Agente Comentarios"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "Evento",
+              "value": "Comments"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        -96
+      ],
+      "id": "f4fa6aba-db37-4d6a-b76a-bec64328b35a",
+      "name": "Execution Comments",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "Evento",
+              "value": "Direct"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        112
+      ],
+      "id": "3e49a9f9-46ae-48fb-a207-4c50b62779ff",
+      "name": "Execution Direct",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c0dc8431-30bd-461c-b5c1-296a09595f30",
+              "name": "nome",
+              "value": "={{ $json.query['hub.challenge'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1168,
+        -352
+      ],
+      "id": "fbd3e57b-292f-4896-9bcf-b4144ca68aa0",
+      "name": "Set Token"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "57532edf-692d-459a-a31a-d27d2a02708a",
+              "leftValue": "={{ $json.body.entry[0].messaging[0].message.is_self }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        112
+      ],
+      "id": "05253843-6f8f-4d36-af8a-4210f7a8a594",
+      "name": "Filter Echo Direct"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "69e5c36e-690d-4aee-8411-3f1b7b2047d0",
+              "leftValue": "={{ $('Instagram Post').item.json.body.entry[0].changes[0].value.from.id }}",
+              "rightValue": "={{ $('Instagram Post').item.json.body.entry[0].id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        -96
+      ],
+      "id": "8d61b59b-935e-4541-bc0a-3c87b47521ff",
+      "name": "Filter Echo Comments"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.nome }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1376,
+        -352
+      ],
+      "id": "c031b29d-92aa-4d28-8120-01b5b7f316bc",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.entry[0].changes[0].field }}",
+                    "rightValue": "comments",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6af2cf96-b6c6-496f-a8fd-f53d52dd0c46"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Comentário"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "8e82ff71-c190-4ead-bb4b-83ca7924db4a",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "<ID_DO_SEU_FLUXO_agente-dm>",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender_id": "={{ $json.sender_id }}",
+            "message_text": "={{ $json.message_text }}",
+            "quick_reply_payload": "={{ $json.quick_reply_payload }}",
+            "message_id": "={{ $json.message_id }}",
+            "is_echo": "={{ $json.is_echo }}",
+            "recipient_id": "={{ $json.recipient_id }}",
+            "attachment_type": "={{ $json.attachment_type }}",
+            "attachment_url": "={{ $json.attachment_url }}",
+            "username": "={{ $json.username }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "sender_id",
+              "displayName": "sender_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "quick_reply_payload",
+              "displayName": "quick_reply_payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "is_echo",
+              "displayName": "is_echo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "boolean"
+            },
+            {
+              "id": "recipient_id",
+              "displayName": "recipient_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "attachment_type",
+              "displayName": "attachment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "attachment_url",
+              "displayName": "attachment_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1980,
+        112
+      ],
+      "id": "a7c2f1d4-8b93-4e06-9a55-31c8e0f7b2a9",
+      "name": "Chama Agente DM"
+    },
+    {
+      "parameters": {
+        "content": "## O porteiro\n\nEste fluxo **so recebe e reparte**. A Meta entrega comentario e DM no mesmo webhook (`instagram-webhook`), entao a entrada tem que ser uma so — quem separa e o `Switch1`, pelo campo `field`.\n\n- `comments` ▶ **Agente Comentarios Instagram**\n- `messages` ▶ **Agente DM Instagram**\n\n**27/ago/2026 — etapa 1 da reforma.** Saiu daqui: o tratamento do comentario (foi para o agente proprio) e a importacao de posts (virou **Importar Posts Instagram**, roda na mao). De 51 nos para 18.\n\nEfeito colateral bom: DM do <SEU NOME> parou de aparecer no log de quem abre o fluxo de comentario.",
+        "height": 420,
+        "width": 480,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -420
+      ],
+      "id": "d1000000-0000-4000-8000-0000000000ff",
+      "name": "Sticky Note Porteiro"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Post": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Filter Echo Comments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Echo Direct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Echo Comments": {
+      "main": [
+        [
+          {
+            "node": "Execution Comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Comments": {
+      "main": [
+        [
+          {
+            "node": "Extrai Comentario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrai Comentario": {
+      "main": [
+        [
+          {
+            "node": "Chama Agente Comentarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Echo Direct": {
+      "main": [
+        [
+          {
+            "node": "Execution Direct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution Direct": {
+      "main": [
+        [
+          {
+            "node": "Set Direct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Direct": {
+      "main": [
+        [
+          {
+            "node": "Chama Agente DM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Get": {
+      "main": [
+        [
+          {
+            "node": "Set Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Token": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  }
+}

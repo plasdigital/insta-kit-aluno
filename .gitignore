@@ -1,0 +1,5 @@
+.env.local
+.env
+midia-temp/
+node_modules/
+publicacoes/*.json

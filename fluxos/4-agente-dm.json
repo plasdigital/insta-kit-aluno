@@ -1,0 +1,3370 @@
+{
+  "name": "Agente DM Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1",
+              "name": "data.contato",
+              "type": "string",
+              "value": "={{ ($json.is_echo === true || $json.is_echo === \"true\") ? String($json.recipient_id || \"\") : String($json.sender_id || \"\") }}"
+            },
+            {
+              "id": "d2",
+              "name": "data.contact_name",
+              "type": "string",
+              "value": "={{ String($json.username || \"\") }}"
+            },
+            {
+              "id": "d3",
+              "name": "data.from_me",
+              "type": "boolean",
+              "value": "={{ $json.is_echo === true || $json.is_echo === \"true\" }}"
+            },
+            {
+              "id": "d4",
+              "name": "data.id_message",
+              "type": "string",
+              "value": "={{ String($json.message_id || \"\") }}"
+            },
+            {
+              "id": "d5",
+              "name": "data.text",
+              "type": "string",
+              "value": "={{ String($json.message_text || \"\") }}"
+            },
+            {
+              "id": "d6",
+              "name": "data.message_type",
+              "type": "string",
+              "value": "={{ String($json.attachment_type || \"text\").toLowerCase() }}"
+            },
+            {
+              "id": "d7",
+              "name": "data.media_url",
+              "type": "string",
+              "value": "={{ String($json.attachment_url || \"\") }}"
+            },
+            {
+              "id": "d8",
+              "name": "data.payload",
+              "type": "string",
+              "value": "={{ String($json.quick_reply_payload || \"\").trim().toUpperCase() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2000,
+        672
+      ],
+      "id": "63224ec7-b8b7-4f2d-892f-db8172b9480f",
+      "name": "Dados da Mensagem"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1d76addb-beee-4ecf-a5e9-20e948d1b237",
+              "leftValue": "={{ $('Dados da Mensagem').item.json.data.from_me }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3504,
+        736
+      ],
+      "id": "2994bc26-80c1-4dbe-8304-3ca821a268a3",
+      "name": "Humano Respondeu?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "tipo0",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.message_type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "tipo1",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.message_type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "tipo2",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.message_type }}",
+                    "rightValue": "share",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Texto Citado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "tipo3",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.message_type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "tipo4",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.message_type }}",
+                    "rightValue": "file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "tipo5",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.message_type }}",
+                    "rightValue": "video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1264,
+        592
+      ],
+      "id": "44fb326c-bf07-42c4-81cf-98f71ef159a4",
+      "name": "Tipo de Mensagem"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Memory1",
+        "key": "={{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        736
+      ],
+      "id": "8b32aa65-9571-4246-a915-325961e7d682",
+      "name": "Buffer: 1a Leitura",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "Memory2",
+        "key": "={{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        736
+      ],
+      "id": "45f8431e-3b69-4661-93ef-7765d292d320",
+      "name": "Buffer: 2a Leitura",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "messageData": "={{ $json.content.parts[0].text }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        192
+      ],
+      "id": "a332b7ea-a5a6-43b8-8ecd-9f18acca87de",
+      "name": "Buffer: Áudio",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "messageData": "=Imagem: {{ $('Descreve Imagem').item.json.content.parts[0].text }}{{ $('Dados da Mensagem').item.json.data.caption ? '\\nLegenda da imagem: ' + $('Dados da Mensagem').item.json.data.caption : '' }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        384
+      ],
+      "id": "24dd08b1-6028-4d68-a54d-b9fec6992d6f",
+      "name": "Buffer: Imagem",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "messageData": "={{ String($('Dados da Mensagem').item.json.data.text ?? '') }}",
+        "tail": "={{ true }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        576
+      ],
+      "id": "03badcf0-b3fc-4d2e-9c64-e8d5631ca0db",
+      "name": "Buffer: Texto",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Código atualizado para o node 'Code' no n8n\nconst array1 = $('Buffer: 1a Leitura').first()?.json?.Memory1;\nconst array2 = $('Buffer: 2a Leitura').first()?.json?.Memory2;\n\n// Combina os elementos dos arrays em strings únicas (com proteção contra null/undefined)\nconst CombinedText1 = Array.isArray(array1) ? array1.join(' ') : (array1 ?? '');\nconst CombinedText2 = Array.isArray(array2) ? array2.join(' ') : (array2 ?? '');\n\n// Retorna os resultados no formato exigido pelo n8n\nreturn [\n  {\n    json: {\n      CombinedText1,\n      CombinedText2,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        736
+      ],
+      "id": "7bf75507-5007-424c-88eb-4d716169b9f0",
+      "name": "Junta Mensagens"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fbe500bb-8a66-4f0c-93df-9631e3bdabfc",
+              "leftValue": "={{ $json.CombinedText1 }}",
+              "rightValue": "={{ $json.CombinedText2 }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        3056,
+        736
+      ],
+      "id": "92c74cc1-ad33-480e-a02c-20acfd57b5a2",
+      "name": "Parou de Digitar?"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3280,
+        736
+      ],
+      "id": "99a25f5b-ae7f-4da9-bddc-d4be54b341a1",
+      "name": "Limpa Buffer",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "propria-conta",
+                    "leftValue": "={{ $('Dados da Mensagem').item.json.data.contato }}",
+                    "rightValue": "<TROQUE_PELO_SEU_IG_PRINCIPAL_USER_ID>",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Propria conta"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1328,
+        672
+      ],
+      "id": "f1298ebd-d282-42e5-926c-aa044b68d8c3",
+      "name": "Filtro de Remetente"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Transcreva tudo que esta no documento, ",
+        "documentUrls": "={{ $json.fileURL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        768
+      ],
+      "id": "145d3305-6650-4771-bad7-761d6bf541c9",
+      "name": "Lê Documento",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Descreva como é o vídeo",
+        "videoUrls": "={{ $json.fileURL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        960
+      ],
+      "id": "f0ad03eb-3bc6-4a97-bc77-4f2bc2d41cbd",
+      "name": "Descreve Vídeo",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "messageData": "=Conteúdo do video Enviado: {{ $json.content.parts[0].text }}{{ $('Dados da Mensagem').item.json.data.caption ? '\\nLegenda do vídeo: ' + $('Dados da Mensagem').item.json.data.caption : '' }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        960
+      ],
+      "id": "9d47810d-61ca-4048-b325-b7f5e6e809f9",
+      "name": "Buffer: Vídeo",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "messageData": "=Conteúdo do Documento Enviado: {{ $('Lê Documento').first().json.content.parts[0].text }}{{ $('Dados da Mensagem').item.json.data.caption ? '\\nLegenda do documento: ' + $('Dados da Mensagem').item.json.data.caption : '' }}",
+        "tail": true
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        768
+      ],
+      "id": "0af4f1c8-dedb-4440-a847-1652a96055fb",
+      "name": "Buffer: Documento",
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Descreva o que está na imagem!",
+        "imageUrls": "={{ $json.fileURL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        384
+      ],
+      "id": "3d47e2c3-3797-49a2-93b1-bc8b9cb29489",
+      "name": "Descreve Imagem",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=ig_{{ $('Dados da Mensagem').first().json.data.contato }}chat",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        4032,
+        368
+      ],
+      "id": "f3206449-a6a3-4349-b5bc-acf7ce1da8cb",
+      "name": "Memória (fala do humano)",
+      "credentials": {
+        "postgres": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Supabase Aula <TROQUE_PELO_SEU_SUPABASE_PROJECT_ID>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "ai",
+              "message": "=ATENDENTE: {{ $('Junta Mensagens').item.json.CombinedText2 }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        3952,
+        128
+      ],
+      "id": "12fec8ea-4ce4-4617-b3d1-c8e3022a248f",
+      "name": "Salva Fala do Humano"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtém a variável de entrada\nconst inputText = $('Loop de Mensagens').first().json.output;\n\n// Verifica se a entrada é válida\nif (typeof inputText !== 'string') {\n    throw new Error('A entrada $input.first().json.message deve ser uma string.');\n}\n\n// Conta o número de caracteres\nconst charCount = inputText.length;\n\n// Calcula o delay baseado em blocos de 40 caracteres\nconst result = Math.floor(charCount / 30) * 1000;\n\n// Retorna os valores\nreturn {\n    characterCount: charCount,\n    delay: result,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5520,
+        1296
+      ],
+      "id": "c04b6de6-bce0-4e2b-ae46-9f1453b80ce7",
+      "name": "Delay"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.output;\n\n// Substitui \\n literais por quebras reais\nconst normalizedText = text.replace(/\\\\n/g, '\\n');\n\n// Divide por blocos de parágrafos\nconst parts = normalizedText.split(/\\n{2,}/);\n\nconst results = [];\n\nfor (const part of parts) {\n  // Regex para links que começam com https:// e terminam com extensão de mídia\n  const urlRegex = /(https:\\/\\/\\S+\\.(?:mp4|png|webp|jpg|jpeg|mp3|ogg|pdf|docx|xlsx|doc))/gi;\n\n  // Extrai os links\n  const links = [...part.matchAll(urlRegex)].map(match => match[1]);\n\n  // Remove todos os links do texto original\n  const cleanedText = part.replace(urlRegex, '').trim();\n\n  // Adiciona texto limpo, se houver\n  if (cleanedText.length > 0) {\n    results.push({ json: { output: cleanedText } });\n  }\n\n  // Adiciona cada link individualmente\n  for (const link of links) {\n    results.push({ json: { output: link } });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4848,
+        1200
+      ],
+      "id": "c8f9b936-d033-4d9f-9ee2-62a4a4fe1647",
+      "name": "Split Message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: (t => { const b = Buffer.from(String(t), 'utf8'); return b.length > 990 ? b.subarray(0,990).toString('utf8').replace(/\\uFFFD+$/,'') + '...' : String(t); })($('Loop de Mensagens').item.json.output) } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5744,
+        1296
+      ],
+      "id": "481f774b-807b-434a-baa2-0b87bebb040d",
+      "name": "Envia Texto",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Janela de 24h: code 10/2534022 = fora do periodo. Nao pode derrubar o registro."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        5072,
+        1200
+      ],
+      "id": "d3e3b48e-4b4c-4ef8-bd73-f2c0e57f6958",
+      "name": "Loop de Mensagens"
+    },
+    {
+      "parameters": {
+        "content": "## Tipo de Mensagem (Classificador)\nClassifica o tipo de mensagem recebida e direciona o fluxo para o tratamento correto de cada mídia. É o nó de bifurcação central após a filtragem do remetente.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n### Observações\n\n- Garante que cada tipo de mídia receba o tratamento adequado (transcrição, análise por IA, etc.). \n- A saída \"Fallback\" captura tipos não mapeados como mensagens efêmeras (que somem), stickers, etc.",
+        "height": 640,
+        "width": 384,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "6237ca8c-1118-41ee-a2b0-0ff2033c33a5",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Buffer: 1a Leitura\nPrimeira leitura do estado atual da lista de mensagens no Redis. É feita antes de aguardar um pequeno intervalo, para comparação posterior. Faz parte do mecanismo de buffer de mensagens.\n\n\n\n\n\n\n\n\n\n\n\n### Observações\n\n- Sempre executado em conjunto com *Buffer: 2a Leitura*.\n- A lista retornada representa o conjunto de mensagens acumuladas até o momento.",
+        "height": 464,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2048,
+        432
+      ],
+      "typeVersion": 1,
+      "id": "6d8cc62a-031b-4b18-8690-e7feae83572d",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Buffer: 2a Leitura\nSegunda leitura da lista de mensagens no Redis, feita após um intervalo de tempo. Usada em conjunto com Buffer: 1a Leitura para detectar se o usuário ainda está digitando ou enviando mensagens.\n\n\n\n\n\n\n\n\n\n\n",
+        "height": 320,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2496,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "f521da8a-f760-4cb4-9f94-ade94c5c4a2d",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# BUFFER DE MENSAGENS ",
+        "height": 1024,
+        "width": 2352,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1600,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "9757c2c5-c7b5-4e83-925f-330678b7723d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Junta Mensagens\nCombina os arrays de mensagens obtidos por Buffer: 1a Leitura e Buffer: 2a Leitura em strings únicas (CombinedText1 e CombinedText2), unindo todos os itens com espaço. Prepara os dados para a comparação no Parou de Digitar?.\n\n\n\n\n\n\n\n\n\n\n\n#### Saída\n\nCombinedText1 — snapshot antigo das mensagens\nCombinedText2 — snapshot atual das mensagens\n\n\n\n\n\n\n\n\n",
+        "height": 464,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2720,
+        432
+      ],
+      "typeVersion": 1,
+      "id": "65e0a5a3-ec64-4195-bc4d-96923cc8dbad",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Parou de Digitar? (Buffer)\nCoração do buffer de mensagens. Compara os dois snapshots de memória. Se forem iguais, significa que o usuário parou de enviar mensagens e o fluxo pode continuar. Se forem diferentes, o usuário ainda está enviando e o fluxo aguarda mais uma iteração.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n### Comportamento\n\n| Resultado | Ação |\n|---|---|\n| **Textos iguais** | Usuário parou de digitar → passa para `Limpa Buffer` |\n| **Textos diferentes** | Usuário ainda está enviando → aguarda nova execução |\n\n---\n\n### Observações\n\n- Este mecanismo (junto com `Buffer: 1a Leitura`, `Buffer: 2a Leitura`, `Junta Mensagens`, `Limpa Buffer`) forma o **buffer de mensagens** do fluxo\n- Evita que o agente responda no meio de uma sequência de mensagens do usuário (ex: vários balões enviados em sequência)\n\n\n\n",
+        "height": 720,
+        "width": 432,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2896,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "6b9dd125-f709-4441-b6f4-3d1071d7c40a",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "##  Limpa Buffer\nApaga a lista de mensagens temporárias do Redis após a comparação ser concluída e o fluxo avançar. Limpa o buffer para que a próxima rodada de mensagens comece com a lista zerada.\n\n\n\n\n\n\n\n\n\n\n\n\n\n#### Observações\n- Executado apenas quando Parou de Digitar? aprova a passagem (textos iguais)\n- Após a deleção, o conteúdo consolidado já foi lido e está disponível em CombinedText2\n\n\n\n\n\n\n\n",
+        "height": 480,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3168,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "b3da960c-f71e-452e-92f7-3f8b4fdf3334",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "##  Humano Respondeu?\nVerifica se a mensagem foi enviada pelo próprio bot/atendente (i.e., saiu do sistema) ou se foi enviada por um usuário externo. Essa distinção é fundamental para evitar que o agente responda às próprias mensagens em loop.\n\n\n\n\n\n",
+        "height": 480,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3392,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "7a1d01a5-84e6-491f-8fa1-c64d8130aadf",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "##  Salva Fala do Humano\nQuando a mensagem foi enviada pelo bot (fromMe = true), este node registra essa mensagem no histórico de conversas do PostgreSQL como uma mensagem do tipo ai. Isso mantém o histórico completo da conversa, incluindo o que o bot disse, para que o agente tenha contexto nas próximas interações.\n\n\n\n\n\n\n\n\n\n\n\n\n#### Observações\n- Usa Postgres Chat Memória (reset) como backend de armazenamento\n- O prefixo \"ATENDENTE:\" facilita a identificação da fonte ao recuperar o histórico\n\n\n\n\n\n",
+        "height": 432,
+        "width": 624,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3760,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "9605ddc7-2a85-4b14-833a-e7da5683ecb7",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "##  Memória do Agente\n\n\n\n\n\n\n\n\n\n\n\n\n### Descrição\nGerencia o histórico de conversas persistido no PostgreSQL. Cada sessão é identificada pelo número de telefone do usuário + sufixo \"chat\". Fornece ao agente as últimas 10 mensagens da conversa para manter a continuidade do atendimento.\n\n### Observações\n\n- Existe também o Postgres Chat Memória (reset) com a mesma configuração, usado pelo Salva Fala do Humano\n- O banco PostgreSQL garante persistência mesmo após reinicializações do N8N",
+        "height": 528,
+        "width": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7360,
+        1952
+      ],
+      "typeVersion": 1,
+      "id": "0af659eb-c33f-4d1f-a1b4-6f481e3875a7",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=ig_{{ $('Dados da Mensagem').first().json.data.contato }}chat"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        576
+      ],
+      "id": "35b9e777-2b0b-4fa8-b99b-2e58d087fbd2",
+      "name": "Memória (reset)",
+      "credentials": {
+        "postgres": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Supabase Aula <TROQUE_PELO_SEU_SUPABASE_PROJECT_ID>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "delete",
+        "deleteMode": "all"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        336
+      ],
+      "id": "446adf0d-ba5a-488a-97ad-4b75f7183162",
+      "name": "Apaga Histórico"
+    },
+    {
+      "parameters": {
+        "dataToSave": {
+          "values": [
+            {
+              "key": "Telefone",
+              "value": "={{ $('Dados da Mensagem').item.json.data.contato }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executionData",
+      "typeVersion": 1.1,
+      "position": [
+        -1104,
+        672
+      ],
+      "id": "eb455459-b77f-4d55-8f87-ec51524fc80d",
+      "name": "Registrar ID da Execução"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        960
+      ],
+      "id": "c125b584-02cb-46dd-9b48-9dd465bdf64e",
+      "name": "Carrega Histórico"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4a9e5f5d-6616-479a-a02e-5d77d0a2a777",
+              "leftValue": "={{ $('Dados da Mensagem').item.json.data.text }}",
+              "rightValue": "#reset",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        768
+      ],
+      "id": "a06f4645-4fdb-4b9a-b490-bc73c20bf2a9",
+      "name": "Comando #reset?"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=ig_{{ $('Dados da Mensagem').first().json.data.contato }}chat"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        1200
+      ],
+      "id": "40d4e851-409b-45b4-9f12-f99426bdf8a6",
+      "name": "Memória (histórico)",
+      "credentials": {
+        "postgres": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Supabase Aula <TROQUE_PELO_SEU_SUPABASE_PROJECT_ID>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Reinicia memória do agente",
+        "height": 832,
+        "width": 704,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        560,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "a7327c31-8c33-4454-82fa-88a112134d63",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "u1",
+              "name": "fileURL",
+              "type": "string",
+              "value": "={{ $('Dados da Mensagem').first().json.data.media_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        192
+      ],
+      "id": "083df2d5-3cf7-4f9a-bbae-ccca764a6456",
+      "name": "URL do Áudio",
+      "notes": "No Instagram a URL da midia ja vem no webhook — nao precisa pedir para a API."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "u1",
+              "name": "fileURL",
+              "type": "string",
+              "value": "={{ $('Dados da Mensagem').first().json.data.media_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        384
+      ],
+      "id": "b46ac93f-c26f-42a2-bcc1-a55fca38c775",
+      "name": "URL da Imagem",
+      "notes": "No Instagram a URL da midia ja vem no webhook — nao precisa pedir para a API."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "u1",
+              "name": "fileURL",
+              "type": "string",
+              "value": "={{ $('Dados da Mensagem').first().json.data.media_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        768
+      ],
+      "id": "ba316e57-20fd-4577-802a-29dd3d29a1dc",
+      "name": "URL do Documento",
+      "notes": "No Instagram a URL da midia ja vem no webhook — nao precisa pedir para a API."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "u1",
+              "name": "fileURL",
+              "type": "string",
+              "value": "={{ $('Dados da Mensagem').first().json.data.media_url }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        960
+      ],
+      "id": "f8db39e4-43fa-4ba5-89d7-b5d1e6078785",
+      "name": "URL do Vídeo",
+      "notes": "No Instagram a URL da midia ja vem no webhook — nao precisa pedir para a API."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: 'Prontinho, zerei nossa conversa. Pode comecar de novo 👋' } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        336
+      ],
+      "id": "8443b334-def4-4532-b8f0-50ab07a8d2e8",
+      "name": "Avisa Reiniciado",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Janela de 24h: code 10/2534022 = fora do periodo. Nao pode derrubar o registro."
+    },
+    {
+      "parameters": {
+        "content": "## Nessa etapa\n- pode não existir se a url já vier no webhook\n- pode buscar o base64 e depois buscar o arquivo\n- buscar a url igual aqui",
+        "height": 1536,
+        "width": 752,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "92345371-ba98-4672-bcaa-e5765b5e7fe1",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Url da midia\n- A URL da mídia é obtida diretamente pelo ID da mensagem. A UazAPI disponibiliza um endpoint específico para isso — a partir do ID, ela retorna a URL pública do arquivo (áudio, imagem, vídeo ou documento). Essa URL é então passada para o node do Gemini, que acessa o conteúdo e realiza a leitura e análise da mídia.",
+        "height": 1328,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1376,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "1b260909-59fb-4c94-a22e-9339f82451f8",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Carrega Histórico\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n- Lê o histórico completo da conversa no PostgreSQL e retorna o número total de mensagens armazenadas na sessão atual (messagesCount). Esse valor é usado pelo próximo node para decidir se o fluxo pode continuar.",
+        "height": 464,
+        "width": 336,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        864
+      ],
+      "typeVersion": 1,
+      "id": "7d6cdc65-4fe1-47a2-b836-24d9fdfe8894",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "## Comando #reset?\n\n\n\n\n\n\n\n\n\n\n\n\n\n- Verifica se o texto enviado pelo usuário é exatamente #reset. A comparação é case-sensitive, portanto somente a forma exata do comando dispara o reinício.",
+        "height": 320,
+        "width": 400,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1216,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "709af238-e8a3-4ace-878e-f50358a5a3b2",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "##  Apaga Histórico\n\n\n\n\n\n\n\n\n\n\n\n\n\n- Apaga completamente o histórico de conversas. Após isso, o agente começa uma nova conversa do zero.",
+        "height": 368,
+        "width": 304,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        656,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "8b1abbf5-e99e-47e9-9bc9-8cf39fd4a1bd",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "##  Avisa Reiniciado\n\n\n\n\n\n\n\n\n\n\n\n\n\n- Após apagar o histórico, envia uma mensagem de confirmação para o usuário informando que a memória foi reiniciada. O texto enviado é \"Reiniciado\", customizável conforme necessário",
+        "height": 208,
+        "width": 304,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1168,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "9b62dc26-a892-4ee1-90fd-f2f36a787cf0",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "##  Memória (reset)\n\n\n\n\n\n\n\n\n\n\n\n\n\n- Sub-node de memória vinculado ao Apaga Histórico. Aponta para a mesma sessão usada pelo agente principal ({telefone}chat), garantindo que o histórico apagado seja exatamente o que o agente consulta nas respostas.",
+        "height": 368,
+        "width": 304,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        656,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "1804ecd9-491b-409e-b40d-439412a4234a",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2384,
+        736
+      ],
+      "id": "3ac8793c-0dae-4371-bb4f-7072c1534988",
+      "name": "Espera 2s"
+    },
+    {
+      "parameters": {
+        "content": "## Espera 2s \n- Espera o tempo que vc definir para concatenar as mensagens. ",
+        "height": 336,
+        "width": 192,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2336,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "760d969f-375a-4fa7-a786-d30f9f70cf9c",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "## Redis \n- Salva o (video, audio, documento e texto) do usuário na lista Redis associada ao número de telefone. Essa lista funciona como um buffer temporário de mensagens recebidas",
+        "height": 1344,
+        "width": 272,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1856,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "b8358697-9afb-455d-a336-2c4fdf5fdf49",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d7b8c72a-01ce-4c44-9cd6-d1bae7795eb7",
+              "leftValue": "={{ $json.sender_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        16,
+        768
+      ],
+      "id": "f85db5d4-e138-487c-8f21-01f1e5d9660d",
+      "name": "Lead Existe?"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Transcreva o audio",
+        "audioUrls": "={{ $json.fileURL }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        192
+      ],
+      "id": "98846c0b-1082-4577-8ca2-e5d11947352e",
+      "name": "Transcreve Áudio",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4272,
+        1328
+      ],
+      "id": "e75d66a9-5bef-4455-8f78-812b62dd0d41",
+      "name": "Modelo Principal",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        4400,
+        1328
+      ],
+      "id": "72a42b72-2b59-4f01-b644-8c041f14a5e4",
+      "name": "Modelo Fallback",
+      "credentials": {
+        "openAiApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=ig_{{ $('Dados da Mensagem').first().json.data.contato }}chat",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        4528,
+        1328
+      ],
+      "id": "a8419033-ddec-46a4-bd1f-f0cbb450c6a5",
+      "name": "Memória do Agente",
+      "credentials": {
+        "postgres": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Supabase Aula <TROQUE_PELO_SEU_SUPABASE_PROJECT_ID>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Junta Mensagens').first().json.CombinedText2 }}\nData: {{ $now.setLocale('pt-br').format('cccc, dd LLLL yyyy t') }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "# ❇️ IDENTIDADE\n\nSou o assistente do <SEU NOME> (@seu_usuario) no direct do Instagram.\nO <SEU NOME> ensina automacao e IA — n8n, agentes, Claude Code, VPS na Hostinger, Supabase,\nEvolution e API oficial do WhatsApp — e presta servico de automacao para empresas.\n\n## Meu objetivo\nEntender o que a pessoa precisa e conduzir para o proximo passo: a Assinatura PRO da\n<SUA MARCA> (todos os cursos por R$ 497 a vista ou 12x de R$ 51,40,\nhttps://seudominio.com.br/assinatura-pro/) ou uma conversa com o <SEU NOME> sobre projeto.\n\n## Tom de voz\nConversa de DM: informal, direto, sem formalidade e sem \"posso ajudar\".\n\n---\n\n# ❇️ ESTILO DE RESPOSTA\n\n- Paragrafos curtos, de 1 a 2 linhas.\n- Separo cada paragrafo com DUAS quebras de linha: cada paragrafo vira uma mensagem.\n- No maximo 3 paragrafos.\n- Respondo de fato a pergunta. Nada de \"depende\" sem explicar.\n\n---\n\n# ❇️ NUNCA\n\n- Nunca recomendo AWS, Google Cloud, Azure, Make, Zapier ou ManyChat: sao concorrentes\n  do que o <SEU NOME> ensina e vende. Se preciso citar infraestrutura, cito VPS na Hostinger.\n- Nunca invento preco, prazo ou promessa de resultado. O unico preco e o da Assinatura PRO.\n- Nunca prometo que o <SEU NOME> responde em X horas.\n\n---\n\n# ❇️ ORCAMENTO\n\nSe a pessoa quer contratar, peco 3 coisas: o que a empresa faz, o que quer automatizar,\ne que ferramenta ja usa. Depois passo para o <SEU NOME>."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        4384,
+        1088
+      ],
+      "id": "10043c0d-9210-4f05-a948-e087b268f63f",
+      "name": "Agente"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Pausa o atendimento automático e transfere a conversa para um atendente humano. Use quando a pessoa pedir para falar com alguém do time, pedir para parar de receber mensagens ou encerrar a conversa. Não precisa de nenhum parâmetro.",
+        "operation": "update",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').item.json.data.contato }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "bot_ativo",
+              "fieldValue": "={{ false }}"
+            },
+            {
+              "fieldId": "notas",
+              "fieldValue": "=Solicitou pausa do atendimento"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        4656,
+        1328
+      ],
+      "id": "80e18105-ca05-42b1-be83-f91aa7eca098",
+      "name": "pausa_atendimento",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Registrar ID da Execução\n\n\n\n\n\n\n\n\n\n\n\n\n\n- Salva o número de telefone do contato nos metadados da execução atual do N8N. Permite rastrear qual número estava sendo atendido em cada execução, facilitando auditorias e depuração de problemas.",
+        "height": 352,
+        "width": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        640
+      ],
+      "typeVersion": 1,
+      "id": "68b9ff4a-cc21-46a0-8941-fddd1a9af62b",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').item.json.data.contato }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        768
+      ],
+      "id": "152edf88-ea4d-4572-8996-01f5a87e710c",
+      "name": "Busca Lead",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "ig_contato_dm",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "sender_id",
+              "fieldValue": "={{ $('Dados da Mensagem').first().json.data.contato }}"
+            },
+            {
+              "fieldId": "username",
+              "fieldValue": "={{ $('Dados da Mensagem').first().json.data.contact_name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        864
+      ],
+      "id": "feda5f53-6840-4b67-947d-89df710728f5",
+      "name": "Cria Lead",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "nao-foi-o-bot",
+              "leftValue": "={{ $json.mid_do_bot }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1552,
+        672
+      ],
+      "id": "0e3e11d8-303a-45db-8cad-2708f0d6be83",
+      "name": "Ignora Envio da API",
+      "notes": "Passa so o que NAO foi o proprio bot que mandou. Sem isto ele responde ao proprio eco, em loop."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').item.json.data.contato }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "bot_ativo",
+              "fieldValue": "={{ false }}"
+            },
+            {
+              "fieldId": "pausado_ate",
+              "fieldValue": "={{ $now.plus(24, \"hours\").toISO() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3728,
+        240
+      ],
+      "id": "27328544-5cad-415b-9aad-8a9dec5eeee7",
+      "name": "Pausa Atendimento",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      },
+      "notes": "O <SEU NOME> respondeu na conversa: o bot cala por 24h e volta sozinho."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b1f261cd-a344-4560-b542-977987f92ffb",
+              "leftValue": "={{ $('Busca Lead').first().json.pausa_ativa }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3728,
+        816
+      ],
+      "id": "939204e7-cba0-4164-b8cf-9ac39e4a72b7",
+      "name": "Atendimento Pausado?",
+      "notes": "pausa_ativa vem calculada da view: (not bot_ativo) e (pausado_ate nulo ou futuro)."
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "user",
+              "message": "={{ $('Junta Mensagens').item.json.CombinedText2 }}"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        3952,
+        560
+      ],
+      "id": "e5ea2d01-72d6-4097-af8a-04ef716fb168",
+      "name": "Salva Fala do Lead"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=ig_{{ $('Dados da Mensagem').first().json.data.contato }}chat",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        4032,
+        784
+      ],
+      "id": "f71c19cb-f56a-4361-96ef-819cb864afac",
+      "name": "Memória (fala do lead)",
+      "credentials": {
+        "postgres": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Supabase Aula <TROQUE_PELO_SEU_SUPABASE_PROJECT_ID>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d5e6f7a8-0005-4a00-9000-eeeeeeeeeeee",
+              "leftValue": "={{ $json.messagesCount }}",
+              "rightValue": 40,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        960
+      ],
+      "id": "c38c9270-62db-4fa1-b7da-f9734b59a520",
+      "name": "Limite de Mensagens"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "or",
+                "conditions": [
+                  {
+                    "id": "cf7f199b-3c61-4019-ac03-45973aa69f8f",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".png",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "9735c835-8bd0-4557-85d5-cadebf0e1df1",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".jpg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "aad33336-5246-432e-8c41-0d3d6f3874a2",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".jpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "7daafcad-aa76-47bc-b911-c32f3d6c9cb6",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".webp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Imagem"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "or",
+                "conditions": [
+                  {
+                    "id": "a48d60d3-a645-4626-9f46-9aa9d921d1f0",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".mp4",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Video"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "or",
+                "conditions": [
+                  {
+                    "id": "95613d80-a212-4397-85fa-05dc995bca9a",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".mp3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "b719479a-41bb-4a5c-8bec-b14ccc7b4d8c",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".ogg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "or",
+                "conditions": [
+                  {
+                    "id": "81ca0b68-635b-4c27-8402-d3c4fe474e98",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "6cccbc6c-e93f-44f6-9cd5-13103691c207",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".docx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "02e21a5c-72cc-4065-84c3-b7e29ccae75f",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".xlsx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  },
+                  {
+                    "id": "ddafe597-04ae-4fe8-9c2c-59e788732a49",
+                    "leftValue": "={{ $('Loop de Mensagens').item.json.output }}",
+                    "rightValue": ".doc",
+                    "operator": {
+                      "type": "string",
+                      "operation": "endsWith"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Documento"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        5296,
+        528
+      ],
+      "id": "a3390ba1-f20c-4e34-abb0-baf2ddfec7fc",
+      "name": "Tipo de Mídia"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { attachment: { type: 'image', payload: { url: $('Loop de Mensagens').item.json.output } } } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5520,
+        528
+      ],
+      "id": "04426f4d-afee-49f7-9176-59c60b456f4f",
+      "name": "Envia Imagem",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { attachment: { type: 'video', payload: { url: $('Loop de Mensagens').item.json.output } } } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5520,
+        720
+      ],
+      "id": "35498b78-a289-40e8-97be-681630bf4e86",
+      "name": "Envia Video",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { attachment: { type: 'audio', payload: { url: $('Loop de Mensagens').item.json.output } } } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5520,
+        912
+      ],
+      "id": "01dab8c2-12c1-4d5c-802b-66845424fa50",
+      "name": "Envia Audio",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { attachment: { type: 'file', payload: { url: $('Loop de Mensagens').item.json.output } } } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5520,
+        1104
+      ],
+      "id": "647c9637-50b0-4493-a44b-ae3e2f37361a",
+      "name": "Envia Documento",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: 'A gente ja trocou bastante mensagem por aqui 😄 Vou chamar o <SEU NOME> pra te responder pessoalmente.' } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        1344
+      ],
+      "id": "c1a2b3c4-0002-4a00-9000-bbbbbbbbbbbb",
+      "name": "Avisa Limite",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Janela de 24h: code 10/2534022 = fora do periodo. Nao pode derrubar o registro."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').item.json.data.contato }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "bot_ativo",
+              "fieldValue": "={{ false }}"
+            },
+            {
+              "fieldId": "notas",
+              "fieldValue": "=Limite de mensagens atingido"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        1344
+      ],
+      "id": "c1a2b3c4-0003-4a00-9000-cccccccccccc",
+      "name": "Pausa por Limite",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: 'Opa! Nao consegui abrir isso aqui 😅 Me manda por escrito (ou audio) que eu te respondo.' } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1488,
+        1152
+      ],
+      "id": "c1a2b3c4-0004-4a00-9000-dddddddddddd",
+      "name": "Avisa Tipo Não Suportado",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Janela de 24h: code 10/2534022 = fora do periodo. Nao pode derrubar o registro."
+    },
+    {
+      "parameters": {
+        "content": "## Limite de Mensagens\n\n- Conta as mensagens já trocadas no histórico do agente.\n- Passou de 40, o bot para de responder sozinho: avisa a pessoa que alguém do time vai assumir e marca `pausado = true` no CRM.\n- Serve como trava de custo e como gatilho de passagem para humano.\n- Para voltar, a pessoa manda `#reset` (ou você despausa no banco).",
+        "height": 300,
+        "width": 480,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        1920
+      ],
+      "id": "sticky-limite",
+      "name": "Sticky Limite"
+    },
+    {
+      "parameters": {
+        "content": "## Tipo Não Suportado\n\n- Saída de fallback do `Tipo de Mensagem`.\n- Cai aqui tudo que não é áudio, imagem, vídeo, documento nem texto — figurinha, localização, contato, enquete.\n- A mensagem devolve o `message_type` entre colchetes só para você identificar o nome real do tipo no teste. **Tire o [debug tipo: ...] antes de entregar ao cliente.**",
+        "height": 300,
+        "width": 400,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3456,
+        1632
+      ],
+      "id": "sticky-nao-suportado",
+      "name": "Sticky Nao Suportado"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').item.json.data.contato }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        336
+      ],
+      "id": "ce604d1b-d1d5-4d80-b8e1-7bec27135c94",
+      "name": "Deleta Registro",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "sender_id"
+            },
+            {
+              "name": "message_text"
+            },
+            {
+              "name": "quick_reply_payload"
+            },
+            {
+              "name": "message_id"
+            },
+            {
+              "name": "is_echo"
+            },
+            {
+              "name": "recipient_id"
+            },
+            {
+              "name": "attachment_type"
+            },
+            {
+              "name": "attachment_url"
+            },
+            {
+              "name": "username"
+            }
+          ]
+        }
+      },
+      "id": "ig-start",
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2224,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "mid_do_bot",
+        "key": "=ig:bot:{{ $('Dados da Mensagem').item.json.data.id_message }}",
+        "options": {}
+      },
+      "id": "ig-foi-bot",
+      "name": "Foi o Bot?",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        672
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "O equivalente do sent_api do Uazapi. O bot grava ig:bot:<mid> ao enviar; achou aqui = foi ele."
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "ja_vista",
+        "key": "=ig:mid:{{ $('Dados da Mensagem').item.json.data.id_message }}",
+        "options": {}
+      },
+      "id": "ig-ja",
+      "name": "Já Processada?",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        672
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "A Meta reenvia o webhook se nao receber 200 rapido. Sem isto o bot responde duas vezes."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cuiakjh",
+              "leftValue": "={{ $json.ja_vista }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ig-rep",
+      "name": "Repetida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -656,
+        672
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ig-ign",
+      "name": "Ignora Repetida",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=ig:mid:{{ $('Dados da Mensagem').item.json.data.id_message }}",
+        "value": "1",
+        "expire": true,
+        "ttl": 86400
+      },
+      "id": "ig-marca",
+      "name": "Marca Processada",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        768
+      ],
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cr769x5",
+              "leftValue": "={{ $json.bloqueado === true || ['pessoal','conhecido','amigo','familia'].includes(String($json.classificacao || '').toLowerCase()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ig-bloq",
+      "name": "Bloqueado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        672
+      ],
+      "notes": "Cala o bot por STATUS (pessoal/conhecido/amigo/familia) ou por bloqueado=true. A saida TRUE nao liga em nada: silencio absoluto."
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "=ig:bot:{{ $json.message_id }}",
+        "value": "1",
+        "expire": true,
+        "ttl": 7200
+      },
+      "id": "ig-mid",
+      "name": "Marca Mid do Bot",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        5968,
+        1296
+      ],
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "O eco desta mensagem vai chegar. Sem esta marca o bot se pausa sozinho ao se ver falando."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "cj8uagj",
+              "leftValue": "={{ $('Busca Lead').first().json.menu_enviado_em }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ig-1a",
+      "name": "Primeira Vez?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4016,
+        960
+      ],
+      "notes": "Regra do <SEU NOME>: a primeira mensagem de qualquer pessoa recebe o menu, seja qual for o texto."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: 'Opa! Aqui e o assistente do <SEU NOME> 🤖\\nEle responde pessoalmente, mas pra nao te deixar esperando: sobre o que voce quer falar?', quick_replies: [ { content_type: 'text', title: 'Duvida do conteudo', payload: 'DUVIDA' }, { content_type: 'text', title: 'Orcamento', payload: 'ORCAMENTO' }, { content_type: 'text', title: 'Quero um curso', payload: 'CURSOS' }, { content_type: 'text', title: 'Ja sou aluno', payload: 'ALUNO' }, { content_type: 'text', title: 'Falar com o <SEU NOME>', payload: 'HUMANO' } ] } }) }}",
+        "options": {}
+      },
+      "id": "ig-menu",
+      "name": "Envia Menu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4400,
+        864
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "ig_contato_dm",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').first().json.data.contato }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "menu_enviado_em",
+              "fieldValue": "={{ $now.toISO() }}"
+            },
+            {
+              "fieldId": "atualizado_em",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "ig-menuok",
+      "name": "Marca Menu Enviado",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4800,
+        864
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Dados da Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Foi o Bot?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Humano Respondeu?": {
+      "main": [
+        [
+          {
+            "node": "Pausa Atendimento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Atendimento Pausado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo de Mensagem": {
+      "main": [
+        [
+          {
+            "node": "URL do Áudio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "URL da Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buffer: Texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buffer: Texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "URL do Documento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "URL do Vídeo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisa Tipo Não Suportado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: 1a Leitura": {
+      "main": [
+        [
+          {
+            "node": "Espera 2s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: 2a Leitura": {
+      "main": [
+        [
+          {
+            "node": "Junta Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: Áudio": {
+      "main": [
+        [
+          {
+            "node": "Buffer: 1a Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: Imagem": {
+      "main": [
+        [
+          {
+            "node": "Buffer: 1a Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: Texto": {
+      "main": [
+        [
+          {
+            "node": "Buffer: 1a Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Junta Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Parou de Digitar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parou de Digitar?": {
+      "main": [
+        [
+          {
+            "node": "Limpa Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpa Buffer": {
+      "main": [
+        [
+          {
+            "node": "Humano Respondeu?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro de Remetente": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Registrar ID da Execução",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Lê Documento": {
+      "main": [
+        [
+          {
+            "node": "Buffer: Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descreve Vídeo": {
+      "main": [
+        [
+          {
+            "node": "Buffer: Vídeo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: Vídeo": {
+      "main": [
+        [
+          {
+            "node": "Buffer: 1a Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer: Documento": {
+      "main": [
+        [
+          {
+            "node": "Buffer: 1a Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descreve Imagem": {
+      "main": [
+        [
+          {
+            "node": "Buffer: Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória (fala do humano)": {
+      "ai_memory": [
+        [
+          {
+            "node": "Salva Fala do Humano",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay": {
+      "main": [
+        [
+          {
+            "node": "Envia Texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Message": {
+      "main": [
+        [
+          {
+            "node": "Loop de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Texto": {
+      "main": [
+        [
+          {
+            "node": "Marca Mid do Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop de Mensagens": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Tipo de Mídia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória (reset)": {
+      "ai_memory": [
+        [
+          {
+            "node": "Apaga Histórico",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apaga Histórico": {
+      "main": [
+        [
+          {
+            "node": "Deleta Registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar ID da Execução": {
+      "main": [
+        [
+          {
+            "node": "Já Processada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carrega Histórico": {
+      "main": [
+        [
+          {
+            "node": "Limite de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comando #reset?": {
+      "main": [
+        [
+          {
+            "node": "Apaga Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Carrega Histórico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória (histórico)": {
+      "ai_memory": [
+        [
+          {
+            "node": "Carrega Histórico",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL do Áudio": {
+      "main": [
+        [
+          {
+            "node": "Transcreve Áudio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL da Imagem": {
+      "main": [
+        [
+          {
+            "node": "Descreve Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL do Documento": {
+      "main": [
+        [
+          {
+            "node": "Lê Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL do Vídeo": {
+      "main": [
+        [
+          {
+            "node": "Descreve Vídeo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Espera 2s": {
+      "main": [
+        [
+          {
+            "node": "Buffer: 2a Leitura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead Existe?": {
+      "main": [
+        [
+          {
+            "node": "Bloqueado?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cria Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcreve Áudio": {
+      "main": [
+        [
+          {
+            "node": "Buffer: Áudio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisa Reiniciado": {
+      "main": [
+        []
+      ]
+    },
+    "Salva Fala do Humano": {
+      "main": [
+        []
+      ]
+    },
+    "Modelo Principal": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo Fallback": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Memória do Agente": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pausa_atendimento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente": {
+      "main": [
+        [
+          {
+            "node": "Split Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Lead": {
+      "main": [
+        [
+          {
+            "node": "Lead Existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cria Lead": {
+      "main": [
+        [
+          {
+            "node": "Comando #reset?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ignora Envio da API": {
+      "main": [
+        [
+          {
+            "node": "Filtro de Remetente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa Atendimento": {
+      "main": [
+        [
+          {
+            "node": "Salva Fala do Humano",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atendimento Pausado?": {
+      "main": [
+        [
+          {
+            "node": "Salva Fala do Lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Primeira Vez?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória (fala do lead)": {
+      "ai_memory": [
+        [
+          {
+            "node": "Salva Fala do Lead",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limite de Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Tipo de Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisa Limite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tipo de Mídia": {
+      "main": [
+        [
+          {
+            "node": "Envia Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envia Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envia Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envia Documento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delay",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Imagem": {
+      "main": [
+        [
+          {
+            "node": "Loop de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Video": {
+      "main": [
+        [
+          {
+            "node": "Loop de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Audio": {
+      "main": [
+        [
+          {
+            "node": "Loop de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Documento": {
+      "main": [
+        [
+          {
+            "node": "Loop de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisa Limite": {
+      "main": [
+        [
+          {
+            "node": "Pausa por Limite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deleta Registro": {
+      "main": [
+        [
+          {
+            "node": "Avisa Reiniciado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Dados da Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Foi o Bot?": {
+      "main": [
+        [
+          {
+            "node": "Ignora Envio da API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Já Processada?": {
+      "main": [
+        [
+          {
+            "node": "Repetida?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Repetida?": {
+      "main": [
+        [
+          {
+            "node": "Ignora Repetida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Marca Processada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marca Processada": {
+      "main": [
+        [
+          {
+            "node": "Busca Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bloqueado?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Comando #reset?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marca Mid do Bot": {
+      "main": [
+        [
+          {
+            "node": "Loop de Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Primeira Vez?": {
+      "main": [
+        [
+          {
+            "node": "Envia Menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Menu": {
+      "main": [
+        [
+          {
+            "node": "Marca Menu Enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}

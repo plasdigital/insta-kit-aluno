@@ -1,0 +1,996 @@
+{
+  "name": "Agente Comentarios Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "meu_id"
+            },
+            {
+              "name": "from_id"
+            },
+            {
+              "name": "from_username"
+            },
+            {
+              "name": "post_id"
+            },
+            {
+              "name": "post_posicionamento"
+            },
+            {
+              "name": "comment_id"
+            },
+            {
+              "name": "comment_text"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b2000000-0000-4000-8000-000000000000",
+              "name": "meu_id",
+              "value": "={{ $json.meu_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b2000001-0000-4000-8000-000000000001",
+              "name": "from_id",
+              "value": "={{ $json.from_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b2000002-0000-4000-8000-000000000002",
+              "name": "from_username",
+              "value": "={{ $json.from_username }}",
+              "type": "string"
+            },
+            {
+              "id": "b2000003-0000-4000-8000-000000000003",
+              "name": "post_id",
+              "value": "={{ $json.post_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b2000004-0000-4000-8000-000000000004",
+              "name": "post_posicionamento",
+              "value": "={{ $json.post_posicionamento }}",
+              "type": "string"
+            },
+            {
+              "id": "b2000005-0000-4000-8000-000000000005",
+              "name": "comment_id",
+              "value": "={{ $json.comment_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b2000006-0000-4000-8000-000000000006",
+              "name": "comment_text",
+              "value": "={{ $json.comment_text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Set Comments"
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "getAll",
+        "projectId": "<SUA_TABELA_NOCODB>",
+        "table": "<SUA_TABELA_NOCODB>",
+        "options": {
+          "where": "=(post_id,eq,{{ $json.post_id }})"
+        }
+      },
+      "type": "n8n-nodes-base.nocoDb",
+      "typeVersion": 3,
+      "position": [
+        448,
+        -80
+      ],
+      "id": "f9d19c35-3454-437f-b8cf-e0fbb5d367ec",
+      "name": "Get Post",
+      "alwaysOutputData": true,
+      "credentials": {
+        "nocoDbApiToken": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nao manda a mesma DM duas vezes para a mesma pessoa no mesmo post.\n// Guarda o par post:pessoa no staticData do workflow (persiste so em execucao de producao).\nconst store = $getWorkflowStaticData('global');\nstore.atendidos = store.atendidos || {};\n\nconst agora = Date.now();\nconst TRINTA_DIAS = 30 * 24 * 60 * 60 * 1000;\nfor (const [k, t] of Object.entries(store.atendidos)) {\n  if (agora - t > TRINTA_DIAS) delete store.atendidos[k];\n}\n\nconst c = $('Set Comments').first().json;\nconst chave = c.post_id + ':' + c.from_id;\n\nif (store.atendidos[chave]) return [];\nstore.atendidos[chave] = agora;\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        -128
+      ],
+      "id": "dedup0001-0000-4000-8000-000000000001",
+      "name": "Ja Respondeu?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { comment_id: $('Set Comments').item.json.comment_id }, message: { text: $('Get Post').item.json.direct_message } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        -128
+      ],
+      "id": "9a32a82f-2c9f-4bec-ae0d-e2ef52400426",
+      "name": "Reply Direct",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// O envio da DM falhou: solta a marca para que a pessoa possa ser atendida\n// numa proxima tentativa (ela ainda tem 7 dias de janela a partir do comentario).\nconst store = $getWorkflowStaticData('global');\nstore.atendidos = store.atendidos || {};\nconst c = $('Set Comments').first().json;\ndelete store.atendidos[c.post_id + ':' + c.from_id];\nreturn items;"
+      },
+      "id": "dedup0001-0000-4000-8000-000000000002",
+      "name": "Desmarca",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Acessa o primeiro item e a variável específica\nconst inputData = $input.first().json.comment_reply;\n\n// Verifica se a variável existe e é uma string antes de dar o split\nif (inputData && typeof inputData === 'string') {\n  const partes = inputData.split('\\n\\n');\n\n  // Retorna cada parte como um novo item para o n8n\n  return partes.map(parte => {\n    return {\n      json: {\n        texto_split: parte.trim() // trim() remove espaços extras ou quebras sobressalentes\n      }\n    };\n  });\n}\n\n// Caso não exista o conteúdo, retorna um array vazio ou o item original\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        64
+      ],
+      "id": "a6d983b3-953d-47ff-acd3-c52e114b93ec",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "type": "random"
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        64
+      ],
+      "id": "b404af13-8383-4e7f-a3a5-a1ed2cdcd881",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('Set Comments').item.json.comment_id }}/replies",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Sort').first().json.texto_split }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        64
+      ],
+      "id": "b396931a-2fa6-406f-8162-8bc16b44e70e",
+      "name": "Reply Comment",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Comentario recebido no post: \"{{ $json.comment_text }}\"\nDe: @{{ $json.from_username }}\nPalavra-chave prometida neste post: {{ $json.key_word || \"(nenhuma)\" }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Voce faz a triagem dos comentarios do Instagram do <SEU NOME> (@seu_usuario),\nque trabalha com <O QUE VOCE FAZ — troque por uma linha sobre o seu negocio>.\n\nClassifique o comentario em UM tipo:\n\n- gatilho  : a pessoa esta PEDINDO o material prometido no post. Use este tipo quando o post tem\n             palavra-chave e a pessoa quis pedi-la, mesmo escrevendo errado ou com outras palavras\n             (\"manda o material ai\", \"quero esse template\", \"como pego?\"). Se o post NAO tem\n             palavra-chave, este tipo nunca se aplica.\n- elogio   : agradecimento, parabens, \"top\", \"muito bom\", emoji de aplauso. Sem pergunta dentro.\n- pergunta : quer saber algo — sobre o conteudo, preco, curso, como fazer.\n- critica  : reclamacao, discordancia, ironia negativa, acusacao.\n- spam     : divulgacao de outro perfil/servico, corrente, texto sem relacao, golpe.\n\nREGRAS DA RESPOSTA SUGERIDA (campo resposta_sugerida):\n- Escreva como o <SEU NOME> escreveria: informal, curto, sem formalidade, sem \"posso ajudar\".\n- No maximo 2 linhas. Uma so ja basta em elogio.\n- Nunca invente preco, prazo ou promessa de resultado.\n- Nunca recomende <LISTE AQUI SEUS CONCORRENTES> — sao concorrentes.\n- Em spam, devolva string vazia.\n- Em critica, NAO se defenda nem prometa nada: reconheca e chame para a conversa.\n- Nao use aspas duplas no texto (ele vai dentro de um JSON).\n\nCONFIANCA: 0 a 1. Use abaixo de 0.8 sempre que houver duvida real — abaixo disso\no tipo gatilho e descartado e nada e enviado automaticamente."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        288
+      ],
+      "id": "a7376888-cc32-42c7-8963-7b5fbd4abada",
+      "name": "Classifica Comentario"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1128,
+        504
+      ],
+      "id": "56f110bb-6d83-4c4f-aa21-478009ae30aa",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA>"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Agente Comentarios Instagram\n\nChamado pelo porteiro **Comentarios Instagram** quando o webhook traz `field: comments`.\n\n**Etapa 1 (27/ago/2026):** saiu de dentro do porteiro para ter canvas, log e execucao proprios — e para a DM do <SEU NOME> parar de aparecer no log de quem abre o fluxo de comentario.\n\nO `Filtra Key Word` agora tolera erro de digitacao (distancia de edicao).\n\n**Etapa 2 (a fazer):** o `AI Agent` abaixo, hoje solto, vira o classificador: elogio / pergunta / critica / spam, com aprovacao pelo Telegram.",
+        "height": 460,
+        "width": 460,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -144
+      ],
+      "id": "a1000000-0000-4000-8000-0000000000ff",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Substitui o par \"If2 + Filtra Key Word\": em vez de FILTRAR (e matar o ramo em silencio),\n// MARCA. Sempre devolve 1 item, para que o comentario que nao bate no gatilho siga para a IA.\n// Foi assim que o comentario do @sergioluiscs se perdeu em 25/ago/2026: o ramo morria calado.\n//\n// Camadas do gatilho:\n//   1. EXATO normalizado  — acento, maiuscula, emoji e pontuacao nao importam\n//   2. ERRO DE DIGITACAO  — distancia de edicao: ate 3 letras exato | 4-7: 1 erro | 8+: 2 erros\n//   3. INTENCAO           — nao e aqui: quem faz e o classificador, que recebe a key_word no prompt\n\nconst normaliza = (s) => (s || '')\n  .toString()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .toLowerCase()\n  .replace(/[^a-z0-9]+/g, ' ')\n  .trim();\n\nfunction distancia(a, b, limite) {\n  if (Math.abs(a.length - b.length) > limite) return limite + 1;\n  const linha = Array.from({ length: b.length + 1 }, (_, i) => i);\n  for (let i = 1; i <= a.length; i++) {\n    let anterior = linha[0];\n    linha[0] = i;\n    let melhor = linha[0];\n    for (let j = 1; j <= b.length; j++) {\n      const troca = anterior + (a[i - 1] === b[j - 1] ? 0 : 1);\n      anterior = linha[j];\n      linha[j] = Math.min(linha[j] + 1, linha[j - 1] + 1, troca);\n      if (linha[j] < melhor) melhor = linha[j];\n    }\n    if (melhor > limite) return limite + 1;\n  }\n  return linha[b.length];\n}\n\nconst tolerancia = (n) => (n <= 3 ? 0 : n <= 7 ? 1 : 2);\n\nconst c = $('Set Comments').first().json;\nconst palavras = normaliza(c.comment_text).split(' ').filter(Boolean);\n\n// Get Post esta com \"Always Output Data\": sem linha na tabela, chega um item vazio em vez de nada.\nconst linha = (items[0] && items[0].json && items[0].json.post_id) ? items[0].json : {};\n\nfunction bate(chave) {\n  if (!chave) return false;\n  const alvo = chave.split(' ').filter(Boolean);\n  if (!alvo.length) return false;\n  const limite = tolerancia(chave.replace(/ /g, '').length);\n  for (let i = 0; i + alvo.length <= palavras.length; i++) {\n    const janela = palavras.slice(i, i + alvo.length).join(' ');\n    if (janela === chave) return true;\n    if (limite && distancia(janela, chave, limite) <= limite) return true;\n  }\n  return false;\n}\n\nconst key_word = linha.key_word || '';\nconst direct_message = linha.direct_message || '';\n\nreturn [{\n  json: {\n    ...c,\n    key_word,\n    direct_message,\n    comment_reply: linha.comment_reply || '',\n    tem_linha: Boolean(linha.post_id),\n    // so e gatilho de verdade se a linha tiver AS DUAS coisas: a palavra e a mensagem a enviar\n    bateu: Boolean(key_word && direct_message && bate(normaliza(key_word))),\n  },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -80
+      ],
+      "id": "e2000000-0000-4000-8000-000000000001",
+      "name": "Confere Gatilho"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bateu",
+              "leftValue": "={{ $json.bateu }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -80
+      ],
+      "id": "e2000000-0000-4000-8000-000000000002",
+      "name": "Bateu o Gatilho?"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"tipo\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"gatilho\",\n        \"elogio\",\n        \"pergunta\",\n        \"critica\",\n        \"spam\"\n      ]\n    },\n    \"resposta_sugerida\": {\n      \"type\": \"string\"\n    },\n    \"confianca\": {\n      \"type\": \"number\"\n    }\n  },\n  \"required\": [\n    \"tipo\",\n    \"resposta_sugerida\",\n    \"confianca\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1256,
+        504
+      ],
+      "id": "e2000000-0000-4000-8000-000000000003",
+      "name": "Formato da Classificacao"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.instagram.com/v23.0/{{ $('Set Comments').item.json.post_id }}?fields=permalink",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        288
+      ],
+      "id": "e2000000-0000-4000-8000-000000000004",
+      "name": "Pega Permalink",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "g1",
+                    "leftValue": "={{ $('Classifica Comentario').item.json.output.tipo }}",
+                    "rightValue": "gatilho",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  },
+                  {
+                    "id": "g2",
+                    "leftValue": "={{ $('Classifica Comentario').item.json.output.confianca }}",
+                    "rightValue": 0.8,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Gatilho (a IA entendeu)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "e1",
+                    "leftValue": "={{ $('Classifica Comentario').item.json.output.tipo }}",
+                    "rightValue": "elogio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Elogio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "combinator": "or",
+                "conditions": [
+                  {
+                    "id": "p1",
+                    "leftValue": "={{ $('Classifica Comentario').item.json.output.tipo }}",
+                    "rightValue": "pergunta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  },
+                  {
+                    "id": "p2",
+                    "leftValue": "={{ $('Classifica Comentario').item.json.output.tipo }}",
+                    "rightValue": "critica",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Pergunta ou critica"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1696,
+        256
+      ],
+      "id": "e2000000-0000-4000-8000-000000000005",
+      "name": "Que Tipo?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('Set Comments').item.json.comment_id }}/replies",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $('Classifica Comentario').item.json.output.resposta_sugerida }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1968,
+        272
+      ],
+      "id": "e2000000-0000-4000-8000-000000000006",
+      "name": "Responde Elogio",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "1075495207",
+        "text": "=👏 <b>Elogio respondido sozinho</b>\n\n@{{ $('Set Comments').item.json.from_username }}: <i>{{ $('Set Comments').item.json.comment_text }}</i>\n\n↳ respondi: <b>{{ $('Classifica Comentario').item.json.output.resposta_sugerida }}</b>\n\n{{ $('Pega Permalink').item.json.permalink || \"(sem link)\" }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2208,
+        272
+      ],
+      "id": "e2000000-0000-4000-8000-000000000007",
+      "name": "Avisa Elogio",
+      "credentials": {
+        "telegramApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Telegram - Avisos Instagram"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "1075495207",
+        "message": "={{ $('Classifica Comentario').item.json.output.tipo === \"critica\" ? \"🔴 CRITICA\" : \"❓ PERGUNTA\" }} de @{{ $('Set Comments').item.json.from_username }}\n\n\"{{ $('Set Comments').item.json.comment_text }}\"\n\nResposta sugerida:\n{{ $('Classifica Comentario').item.json.output.resposta_sugerida }}\n\n{{ $('Pega Permalink').item.json.permalink || \"(sem link)\" }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Responder assim",
+            "disapproveLabel": "Deixa comigo"
+          }
+        },
+        "chatApproval": true,
+        "approverIds": "1075495207",
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 48
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        544
+      ],
+      "id": "e2000000-0000-4000-8000-000000000008",
+      "name": "Pede Aprovacao",
+      "credentials": {
+        "telegramApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Telegram - Avisos Instagram"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ap",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        544
+      ],
+      "id": "e2000000-0000-4000-8000-000000000009",
+      "name": "Aprovado?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('Set Comments').item.json.comment_id }}/replies",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $json.texto }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2816,
+        544
+      ],
+      "id": "e2000000-0000-4000-8000-00000000000a",
+      "name": "Responde Aprovado",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Etapa 2 — a triagem por IA\n\nSo roda quando o comentario **nao** bateu no gatilho. O caminho de cima e deterministico e nunca passa por modelo — de proposito: e a parte que vende.\n\n| tipo | o que acontece |\n|---|---|\n| `gatilho` | a IA entendeu que a pessoa pediu o material sem acertar a palavra — volta para o caminho da DM. **Exige confianca >= 0.8** |\n| `elogio` | responde em publico sozinho e **avisa** no Telegram |\n| `pergunta` / `critica` | **congela** e pede aprovacao no Telegram (48h de limite) |\n| `spam` | nada — saida extra, ligada em lugar nenhum, de proposito |\n\nBot: **@seu_bot**. Sem `limitWaitTime` a execucao ficaria pendente para sempre se ninguem clicasse.",
+        "height": 480,
+        "width": 520,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        784
+      ],
+      "id": "e2000000-0000-4000-8000-0000000000fe",
+      "name": "Sticky Note Etapa 2"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "1075495207",
+        "message": "Beleza. Escreve do seu jeito — o texto da IA ja esta na caixa, e o que voce enviar vai pro comentario.",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Resposta que vai ao ar",
+              "fieldType": "textarea",
+              "defaultValue": "={{ $('Classifica Comentario').item.json.output.resposta_sugerida }}"
+            }
+          ]
+        },
+        "options": {
+          "responseFormTitle": "=Resposta para @{{ $('Set Comments').item.json.from_username }}",
+          "responseFormDescription": "={{ $('Set Comments').item.json.comment_text }}",
+          "responseFormButtonLabel": "Publicar",
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 48
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2368,
+        592
+      ],
+      "id": "e3000000-0000-4000-8000-000000000001",
+      "name": "Pede Texto",
+      "credentials": {
+        "telegramApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Telegram - Avisos Instagram"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Uma resposta so sai daqui. Duas origens possiveis:\n//   - botao \"Responder assim\"  -> data.approved === true  -> vale a sugestao da IA\n//   - formulario \"Deixa comigo\" -> data.<campo> = o que o <SEU NOME> escreveu\n// <SEU NOME> apagou tudo e mandou vazio = ele decidiu nao responder: o ramo morre aqui, de proposito.\nconst d = $json.data || {};\nconst sugerida = $('Classifica Comentario').first().json.output.resposta_sugerida || '';\nconst escrito = Object.values(d).find((v) => typeof v === 'string' && v.trim());\nconst texto = String(d.approved === true ? sugerida : (escrito || '')).trim();\nreturn texto ? [{ json: { texto, origem: d.approved === true ? 'sugestao' : 'reescrita' } }] : [];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        544
+      ],
+      "id": "e3000000-0000-4000-8000-000000000002",
+      "name": "Texto Final"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Set Comments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Comments": {
+      "main": [
+        [
+          {
+            "node": "Get Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Post": {
+      "main": [
+        [
+          {
+            "node": "Confere Gatilho",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ja Respondeu?": {
+      "main": [
+        [
+          {
+            "node": "Reply Direct",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Direct": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Desmarca",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Reply Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classifica Comentario",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confere Gatilho": {
+      "main": [
+        [
+          {
+            "node": "Bateu o Gatilho?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bateu o Gatilho?": {
+      "main": [
+        [
+          {
+            "node": "Ja Respondeu?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classifica Comentario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifica Comentario": {
+      "main": [
+        [
+          {
+            "node": "Pega Permalink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pega Permalink": {
+      "main": [
+        [
+          {
+            "node": "Que Tipo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Que Tipo?": {
+      "main": [
+        [
+          {
+            "node": "Ja Respondeu?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responde Elogio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pede Aprovacao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Responde Elogio": {
+      "main": [
+        [
+          {
+            "node": "Avisa Elogio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pede Aprovacao": {
+      "main": [
+        [
+          {
+            "node": "Aprovado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aprovado?": {
+      "main": [
+        [
+          {
+            "node": "Texto Final",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pede Texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato da Classificacao": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Classifica Comentario",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pede Texto": {
+      "main": [
+        [
+          {
+            "node": "Texto Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texto Final": {
+      "main": [
+        [
+          {
+            "node": "Responde Aprovado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
