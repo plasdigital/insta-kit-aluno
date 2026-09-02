@@ -3,7 +3,7 @@
 Toda DM que chega é atendida por um agente: **menu de botões na primeira mensagem, IA nas
 seguintes**, e e-mail para você quando o assunto é orçamento ou "quero falar com humano".
 
-**O arquivo:** `fluxos/4-agente-dm.json` — 93 nós. É o maior do kit, e o mais interessante.
+**O arquivo:** `fluxos/3-agente-dm.json` — 93 nós. É o maior do kit, e o mais interessante.
 
 | | |
 |---|---|

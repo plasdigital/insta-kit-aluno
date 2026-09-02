@@ -6,6 +6,9 @@ node publicar/publicar.mjs carrossel pasta-com-os-slides/  TESTE --legenda legen
 node publicar/publicar.mjs reels     corte.mp4 --capa thumb.jpg  TESTE --legenda "..."
 node publicar/publicar.mjs story     aviso.png             TESTE
 
+# publicando já com a promessa do comentário ligada (ver docs/03-comentarios.md)
+node publicar/publicar.mjs carrossel slides/ TESTE --legenda legenda.md      --gatilho TEMPLATE --dm "Segue o link: https://..." --resposta "dá uma olhada no direct 😉"
+
 node publicar/hospedar.mjs --listar        # o que está hospedado
 node publicar/hospedar.mjs --limpar 7      # apaga o que foi publicado há mais de uma semana
 ```

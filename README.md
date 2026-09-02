@@ -52,8 +52,9 @@ Depois disso, leia o que você for usar:
 ├── publicar/               foto · carrossel · reels · story  (+ hospedagem e registro)
 ├── metricas/               desempenho na hora  +  boletim semanal
 ├── agente-dm/              o schema do banco e os comandos de quem o bot atende
+├── comentarios/            o schema da tabela de gatilhos + o comando que cadastra a promessa
 │
-├── fluxos/                 os 5 workflows do n8n, prontos para importar
+├── fluxos/                 os 4 workflows do n8n, prontos para importar
 ├── docs/                   a explicação de cada peça
 └── publicacoes/            um JSON por post publicado (criado sozinho)
 ```

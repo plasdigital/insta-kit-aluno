@@ -11,7 +11,7 @@
       "typeVersion": 2.1,
       "position": [
         0,
-        0
+        -128
       ],
       "id": "e03992b3-f6cb-4740-9dfe-0169b849cb06",
       "name": "Webhook"
@@ -33,8 +33,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        208,
-        0
+        224,
+        -128
       ],
       "id": "26bcc689-5e20-484b-a501-02cff07bb76c",
       "name": "Edit Fields"
@@ -48,8 +48,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        416,
-        0
+        448,
+        -128
       ],
       "id": "6e2e4c75-a807-4612-beb4-f7556913a288",
       "name": "Respond to Webhook"
@@ -63,7 +63,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        944,
+        0,
         -352
       ],
       "id": "f2783034-9d49-4aa1-a6cc-d4492a66231d",
@@ -78,7 +78,7 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        816,
+        -336,
         -416
       ],
       "typeVersion": 1,
@@ -94,8 +94,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        880,
-        16
+        0,
+        192
       ],
       "id": "907ea041-b050-432e-865b-1a99b2b9b96f",
       "name": "Instagram Post"
@@ -108,8 +108,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        816,
-        -112
+        -144,
+        48
       ],
       "typeVersion": 1,
       "id": "5a8d5ae5-af62-4ea5-ad10-357213d7e975",
@@ -186,8 +186,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1760,
-        112
+        896,
+        288
       ],
       "id": "5ca6cb89-fb78-48e3-87bf-9731170d0a48",
       "name": "Set Direct"
@@ -245,8 +245,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        900,
-        -160
+        896,
+        96
       ],
       "id": "76ca30a9-330a-4b34-9344-162976b5fe32",
       "name": "Extrai Comentario"
@@ -351,7 +351,7 @@
       "typeVersion": 1.2,
       "position": [
         1120,
-        -160
+        96
       ],
       "id": "1c2334fe-6974-474e-8711-14e6c9a09da6",
       "name": "Chama Agente Comentarios"
@@ -370,8 +370,8 @@
       "type": "n8n-nodes-base.executionData",
       "typeVersion": 1,
       "position": [
-        1536,
-        -96
+        672,
+        96
       ],
       "id": "f4fa6aba-db37-4d6a-b76a-bec64328b35a",
       "name": "Execution Comments",
@@ -391,8 +391,8 @@
       "type": "n8n-nodes-base.executionData",
       "typeVersion": 1,
       "position": [
-        1536,
-        112
+        672,
+        288
       ],
       "id": "3e49a9f9-46ae-48fb-a207-4c50b62779ff",
       "name": "Execution Direct",
@@ -415,7 +415,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1168,
+        224,
         -352
       ],
       "id": "fbd3e57b-292f-4896-9bcf-b4144ca68aa0",
@@ -448,8 +448,8 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        1328,
-        112
+        448,
+        288
       ],
       "id": "05253843-6f8f-4d36-af8a-4210f7a8a594",
       "name": "Filter Echo Direct"
@@ -481,8 +481,8 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        1328,
-        -96
+        448,
+        96
       ],
       "id": "8d61b59b-935e-4541-bc0a-3c87b47521ff",
       "name": "Filter Echo Comments"
@@ -496,7 +496,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        1376,
+        448,
         -352
       ],
       "id": "c031b29d-92aa-4d28-8120-01b5b7f316bc",
@@ -539,8 +539,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        1104,
-        16
+        224,
+        192
       ],
       "id": "8e82ff71-c190-4ead-bb4b-83ca7924db4a",
       "name": "Switch1"
@@ -657,8 +657,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1980,
-        112
+        1120,
+        288
       ],
       "id": "a7c2f1d4-8b93-4e06-9a55-31c8e0f7b2a9",
       "name": "Chama Agente DM"
@@ -673,8 +673,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -660,
-        -420
+        -656,
+        -416
       ],
       "id": "d1000000-0000-4000-8000-0000000000ff",
       "name": "Sticky Note Porteiro"
@@ -823,6 +823,7 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "binaryMode": "separate"
   }
 }

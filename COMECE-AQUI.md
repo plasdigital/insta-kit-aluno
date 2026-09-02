@@ -120,12 +120,20 @@ Estende por mais 60 dias e regrava a validade no `.env.local` sozinho. Não prec
 
 ## 7. Supabase (opcional, mas necessário para publicar arquivo local)
 
-Duas coisas usam Supabase aqui: a **hospedagem da mídia** (bucket público) e a **tabela de contatos
-da DM**. Se você só vai publicar de URL e não vai ligar o agente, pule.
+Três coisas usam Supabase aqui: a **hospedagem da mídia** (bucket público), a **tabela de contatos
+da DM** e a **tabela de gatilhos** (a promessa de cada post). Se você só vai publicar de URL e não
+vai ligar nem comentário nem DM, pule.
 
 1. Crie um projeto em supabase.com.
 2. Crie um bucket **público** chamado `instagram`.
 3. Preencha `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` no `.env.local`.
+4. Rode os dois SQL no editor do Supabase (os dois são idempotentes, pode rodar de novo sem medo):
+   - `comentarios/schema.sql` — a tabela de gatilhos, se for usar "comenta X que eu te mando"
+   - `agente-dm/schema.sql` — a tabela de contatos, se for ligar o agente de DM
+
+> Os dois criam uma **view em `public`** espelhando a tabela. Isso existe porque o nó Supabase do
+> n8n não deixa escolher schema — ele só enxerga `public`. Descobri isso depois de o fluxo insistir
+> que a tabela não existia.
 
 > 🔒 **Se você for rodar isso num servidor, não use a `service_role` lá.** Ela abre o projeto
 > inteiro. O `hospedar.mjs` tem um segundo modo: crie um usuário comum (só e-mail e senha, sem

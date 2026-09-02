@@ -99,16 +99,20 @@
     },
     {
       "parameters": {
-        "authentication": "nocoDbApiToken",
         "operation": "getAll",
-        "projectId": "<SUA_TABELA_NOCODB>",
-        "table": "<SUA_TABELA_NOCODB>",
-        "options": {
-          "where": "=(post_id,eq,{{ $json.post_id }})"
+        "tableId": "ig_gatilho_post",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "post_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.post_id }}"
+            }
+          ]
         }
       },
-      "type": "n8n-nodes-base.nocoDb",
-      "typeVersion": 3,
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
       "position": [
         448,
         -80
@@ -117,9 +121,9 @@
       "name": "Get Post",
       "alwaysOutputData": true,
       "credentials": {
-        "nocoDbApiToken": {
+        "supabaseApi": {
           "id": "TROQUE-PELA-SUA-CREDENCIAL",
-          "name": "<SUA MARCA>"
+          "name": "<SUA MARCA> Oficial"
         }
       }
     },
@@ -181,8 +185,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2384,
-        -112
+        2368,
+        -128
       ]
     },
     {
@@ -523,8 +527,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1968,
-        272
+        1920,
+        352
       ],
       "id": "e2000000-0000-4000-8000-000000000006",
       "name": "Responde Elogio",
@@ -548,8 +552,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2208,
-        272
+        2144,
+        352
       ],
       "id": "e2000000-0000-4000-8000-000000000007",
       "name": "Avisa Elogio",

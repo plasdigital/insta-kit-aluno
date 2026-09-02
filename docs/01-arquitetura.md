@@ -20,16 +20,19 @@ elas estavam resolvendo.
    (monta container → publica)                    comentário         DM
           │                                             │             │
           ▼                                             ▼             ▼
-   publicacoes/*.json  ◄──────────────┐      2-agente-comentarios   4-agente-dm
+   publicacoes/*.json  ◄──────────────┐      2-agente-comentarios   3-agente-dm
    (um arquivo por post: media_id)    │              │                     │
           │                           │         resposta privada      menu + IA + e-mail
           ▼                           │              (vira DM)              │
    metricas/metricas.mjs              │                                     ▼
    metricas/boletim.mjs ──────────────┘                        tabela ig_contato_dm
+
+   comentarios/gatilhos.mjs ──▶ tabela ig_gatilho_post ──▶ lida pelo 2-agente-comentarios
 ```
 
 Duas metades que quase não se falam: **o que sai** (comando no terminal) e **o que entra**
-(webhook no n8n). O único fio entre elas é a tabela que diz qual palavra-chave vale em qual post.
+(webhook no n8n). O único fio entre elas é a tabela que diz qual palavra-chave vale em qual post —
+e quem escreve nessa tabela é o lado de fora, no mesmo comando que publica.
 
 ---
 

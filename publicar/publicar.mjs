@@ -9,12 +9,18 @@
 //   --confirmar    SEM ela nada é publicado: monta, mostra a prévia e para (regra do CLAUDE.md)
 //   --agendar      só prepara o container e imprime o id (vale 24h)
 //
+//   --gatilho PALAVRA --dm "texto|arquivo.md" [--resposta "..."]
+//                  liga a promessa do post na mesma hora: quem comentar PALAVRA recebe a DM.
+//                  Sem isso o post nasce mudo — e post sem linha na tabela não dispara nada e
+//                  não reclama (foi assim que o comentário de 25/ago/2026 se perdeu).
+//
 // Arquivo local é hospedado automaticamente (hospedar.mjs) — a Meta só aceita URL HTTPS pública.
 import fs from 'node:fs';
 import path from 'node:path';
 import { carregarEnv, conta, chamar, dorme, morre } from '../_ig-api.mjs';
 import { expandir, hospedarLocais } from './hospedar.mjs';
 import { registrar, detectarProjeto } from './registro.mjs';
+import { salvarGatilho } from '../comentarios/gatilhos.mjs';
 
 const IMAGEM = ['.jpg', '.jpeg', '.png'];
 const VIDEO = ['.mp4', '.mov'];
@@ -94,12 +100,24 @@ let legenda = opcao('legenda') || '';
 if (legenda && fs.existsSync(legenda)) {
   legenda = extrairLegenda(fs.readFileSync(legenda, 'utf8'));
 }
+
+// ---------- gatilho de comentário ----------
+// Conferido AQUI, antes de hospedar e publicar: descobrir que faltou o `--dm` depois do post no ar
+// significa uma promessa na legenda que ninguém cumpre.
+const gatilho = opcao('gatilho');
+let gatilhoDm = opcao('dm') || '';
+if (gatilhoDm && fs.existsSync(gatilhoDm)) gatilhoDm = extrairLegenda(fs.readFileSync(gatilhoDm, 'utf8'));
+if (gatilho && !gatilhoDm) morre('--gatilho sem --dm: a palavra dispara e não há o que enviar. Passe --dm "texto" ou um arquivo.');
+if (gatilhoDm && !gatilho) morre('--dm sem --gatilho: não há palavra que dispare essa mensagem.');
+if (gatilho && gatilhoDm.length > 1000) {
+  morre(`A DM tem ${gatilhoDm.length} caracteres — o limite da API do Instagram é 1000 bytes.`);
+}
 if (legenda.length > 2200) morre(`Legenda com ${legenda.length} caracteres — o Instagram corta em 2200.`);
 const hashtags = (legenda.match(/#\w+/g) || []).length;
 if (hashtags > 30) morre(`${hashtags} hashtags — o limite do Instagram é 30.`);
 
 // ---------- mídias ----------
-const OPCOES_COM_VALOR = ['legenda', 'capa', 'conta', 'env', 'publicar-container'];
+const OPCOES_COM_VALOR = ['legenda', 'capa', 'conta', 'env', 'publicar-container', 'gatilho', 'dm', 'resposta'];
 const entradas = argv.slice(1).filter((a, i, arr) => {
   if (a.startsWith('--')) return false;
   const anterior = arr[i - 1] || '';
@@ -142,6 +160,17 @@ if (legenda) {
   console.log('\n────── legenda ──────');
   console.log(legenda);
   console.log(`────── ${legenda.length}/2200 caracteres · ${hashtags} hashtags ──────`);
+}
+if (gatilho) {
+  console.log('\n────── gatilho de comentário ──────');
+  console.log(`  comentou "${gatilho}"  →  recebe no direct:`);
+  console.log(`  ${gatilhoDm.replace(/\n/g, '\n  ')}`);
+  console.log(`  resposta pública: ${opcao('resposta') || '— (só DM)'}`);
+  console.log('───────────────────────────────────');
+} else if (/coment(a|e)\b|comenta[r]?\s|manda\s+["“]?[A-Z]{3,}/i.test(legenda)) {
+  // a legenda promete e o post ia nascer mudo — a cicatriz de 25/ago em forma de aviso
+  console.log('\n⚠️  a legenda parece pedir um comentário, mas você não passou --gatilho.');
+  console.log('    Post sem linha na tabela não dispara nada, e não reclama.');
 }
 if (!tem('confirmar')) {
   console.log('\n⏸️  NADA foi publicado. Confira acima e repita o comando com --confirmar.\n');
@@ -237,4 +266,28 @@ const reg = registrar({
 });
 if (reg) console.log(`    📝 registro: ${path.relative(process.cwd(), reg)}`);
 if (projeto?.roteiro) console.log(`    📝 roteiro.json de ${path.basename(projeto.pasta)}: campo "publicado" atualizado`);
+
+// A linha do gatilho nasce AQUI, com o post. Depois de publicado: se a gravação falhar, o post já
+// está no ar e ninguém desfaz isso — o erro é avisado alto e o comando de conserto vem junto.
+if (gatilho) {
+  try {
+    await salvarGatilho({
+      post_id: pub.id,
+      conta: (await chamar('me', { token: c.token, params: { fields: 'username' } }).catch(() => null))?.username
+        || c.rotulo.toLowerCase(),
+      key_word: gatilho,
+      direct_message: gatilhoDm,
+      comment_reply: opcao('resposta') || null,
+      permalink: info?.permalink || null,
+      media_type: info?.media_type || null,
+      caption: legenda || null,
+      publicado_em: info?.timestamp || new Date().toISOString(),
+    });
+    console.log(`    🎯 gatilho "${gatilho}" no ar — quem comentar recebe a DM`);
+  } catch (e) {
+    console.log(`\n⚠️  O POST FOI PUBLICADO, mas o gatilho NÃO foi gravado: ${e.message}`);
+    console.log(`    A legenda promete e ninguém cumpre. Grave agora:`);
+    console.log(`    node comentarios/gatilhos.mjs set ${pub.id} --palavra ${gatilho} --dm "..." --confirmar\n`);
+  }
+}
 console.log();

@@ -27,6 +27,7 @@ comandos read-only** (`perfil.mjs`, `diagnostico.mjs`) e montar a prévia sem `-
 | "como foi o post?" · "quantas curtidas?" | `node metricas/metricas.mjs` |
 | "como foi minha semana?" | `node metricas/boletim.mjs TESTE --dias 7` |
 | "quem já falou comigo na DM?" | `node agente-dm/contatos.mjs` |
+| "que posts têm gatilho ligado?" | `node comentarios/gatilhos.mjs listar` |
 
 ### Publicar (🔴 exige confirmação — ver seção 3)
 
@@ -37,6 +38,7 @@ comandos read-only** (`perfil.mjs`, `diagnostico.mjs`) e montar a prévia sem `-
 | publicar reels | `node publicar/publicar.mjs reels <video.mp4> TESTE --legenda "..." [--capa <img>]` |
 | publicar story | `node publicar/publicar.mjs story <img\|video.mp4> TESTE` |
 | deixar pronto pra publicar depois (vale 24h) | acrescente `--agendar`; depois `--publicar-container <id> --confirmar` |
+| publicar **com a promessa do comentário** | acrescente `--gatilho TEMPLATE --dm "o que vai no direct" [--resposta "..."]` |
 
 **Sem `--confirmar` o script monta tudo, mostra a prévia e para.** É assim que se mostra ao dono o
 que vai ao ar. **Rode sempre sem `--confirmar` primeiro.**
@@ -50,12 +52,20 @@ que vai ao ar. **Rode sempre sem `--confirmar` primeiro.**
 | "o que está hospedado?" | `node publicar/hospedar.mjs --listar` |
 | "limpa o que já publiquei" | `node publicar/hospedar.mjs --limpar [dias]` (padrão 7) |
 | "bloqueia o fulano no bot" | `node agente-dm/contatos.mjs bloquear @fulano` |
+| "liga o gatilho nesse post" | `node comentarios/gatilhos.mjs set <post_id\|url> --palavra X --dm "..." --confirmar` |
+| "tira o gatilho desse post" | `node comentarios/gatilhos.mjs tirar <post_id> --confirmar` |
+| "cadastra os posts que já estão no ar" | `node comentarios/gatilhos.mjs sincronizar --confirmar` |
 | "carrega quem já me mandou DM" | `node agente-dm/precarga.mjs TESTE` |
 
 ### O que roda no n8n, não aqui
 
 A automação de **comentários** e o **agente de DM** são fluxos, não scripts: importe os JSONs de
 `fluxos/` no n8n. Esta pasta só guarda os arquivos e a documentação deles.
+
+⚠️ **A tabela de gatilhos é a exceção, e é sua.** Os fluxos só LEEM dela; quem escreve é o
+`publicar.mjs --gatilho` e o `comentarios/gatilhos.mjs`. Se o dono publicar um post prometendo
+"comenta X" sem cadastrar o gatilho, **nada acontece e nada reclama** — o fluxo termina em verde.
+Ao publicar com uma promessa na legenda, cadastre o gatilho no mesmo comando.
 
 ---
 
@@ -134,6 +144,7 @@ Este arquivo diz **o que fazer**. Quando o dono perguntar *por quê*, a resposta
 | `docs/01-arquitetura.md` | por que o projeto tem esta forma, e o que dá pra desfazer |
 | `docs/02-publicar.md` | publicação, hospedagem e as cicatrizes de cada formato |
 | `docs/03-comentarios.md` | a automação de comentário, e por que são dois fluxos |
+| `docs/03-comentarios.md` (tabela de gatilhos) | onde a promessa de cada post é cadastrada |
 | `docs/04-agente-dm.md` | o agente de DM, a pré-carga e a janela de 24h |
 | `docs/05-metricas.md` | métricas e o boletim semanal |
 | `docs/06-o-que-a-api-permite.md` | o mapa completo da API, sondado ao vivo |

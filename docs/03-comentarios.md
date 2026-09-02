@@ -4,8 +4,9 @@ Quando a legenda promete *"comenta TEMPLATE que eu te mando o vídeo"*, quem cum
 fluxo do n8n. Não há script neste kit para isso, **de propósito**: é uma cadeia que reage a webhook
 e precisa de estado, log e retentativa.
 
-**Os arquivos:** `fluxos/1-porteiro-webhook.json` e `fluxos/2-agente-comentarios.json`
-(mais `fluxos/3-importar-posts.json`, que roda no botão para encher a tabela de posts).
+**Os arquivos:** `fluxos/1-porteiro-webhook.json` e `fluxos/2-agente-comentarios.json`.
+A tabela que sustenta os dois é `comentarios/schema.sql`, e quem escreve nela é
+`comentarios/gatilhos.mjs` — comando, não fluxo.
 
 ---
 
@@ -35,20 +36,46 @@ comentário**. Se mais de uma pessoa vai mexer nisso, esse último ponto sozinho
 
 ## A palavra-chave é por post, não do fluxo
 
-Cada post ganha uma linha numa tabela com três colunas que importam:
+Cada post ganha uma linha numa tabela com quatro colunas que importam:
 
 | coluna | o quê |
 |---|---|
 | `post_id` | o id da mídia |
 | `key_word` | a palavra que dispara |
 | `direct_message` | o que vai na DM |
+| `comment_reply` | liga **também** a resposta pública ("dá uma olhada no direct 😉"); vazia, sai só a DM |
 
 **Post sem linha não dispara nada.** É isso que permite mudar a promessa a cada publicação sem
-tocar no n8n. Uma quarta coluna, `comment_reply`, liga também a resposta pública ("dá uma olhada no
-direct 😉"); vazia, sai só a DM.
+tocar no n8n.
 
-Eu uso NocoDB, mas qualquer tabela serve — inclusive uma tabela do próprio Supabase, o que
-provavelmente é o que você deveria fazer se já vai ter Supabase por causa da DM.
+A tabela mora no Supabase (`comentarios/schema.sql` cria tudo, e é idempotente). Repare na **view
+`public.ig_gatilho_post`** que vem junto: ela não é preciosismo. O nó Supabase do n8n só enxerga o
+schema `public`, então a tabela vive em `instagram.gatilho_post` e a view a espelha. É o mesmo
+truque do `ig_contato_dm`, no agente de DM.
+
+### Como se cadastra um gatilho
+
+O caminho normal é **na hora de publicar** — a linha nasce junto com o post:
+
+```bash
+node publicar/publicar.mjs carrossel slides/   --legenda "comenta TEMPLATE que eu te mando o vídeo"   --gatilho TEMPLATE --dm "Segue o link: https://..." --resposta "dá uma olhada no direct 😉"   --confirmar
+```
+
+Para o resto existe `comentarios/gatilhos.mjs`:
+
+```bash
+node comentarios/gatilhos.mjs listar                     o que está no ar
+node comentarios/gatilhos.mjs ver <post_id|url>          uma linha
+node comentarios/gatilhos.mjs set <post_id|url> --palavra TEMPLATE --dm "..." --confirmar
+node comentarios/gatilhos.mjs tirar <post_id> --confirmar
+node comentarios/gatilhos.mjs sincronizar --confirmar    cadastra os posts que já estavam no ar
+```
+
+> **Isto já foi um fluxo do n8n** que importava os posts com a miniatura, para alguém olhar a grade
+> numa ferramenta de tabela. Quando ninguém abre a tabela — porque quem opera o banco é a IA — a
+> miniatura deixa de pagar uma ferramenta e um fluxo a mais. Vale a pergunta no seu caso: **essa
+> tabela vai ser lida por gente?** Se sim, uma ferramenta com grade e miniatura é ótima. Se não,
+> ela é peso.
 
 ## As três camadas do filtro
 
