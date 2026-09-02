@@ -69,14 +69,36 @@ async function resolverPostId(entrada) {
   return achados[0].post_id;
 }
 
-/** Escreve uma linha. Exportada: é o que o publicar.mjs chama com --gatilho. */
+/**
+ * Escreve uma linha. Exportada: é o que o publicar.mjs chama com --gatilho.
+ *
+ * ⚠️ Não é upsert. O `Prefer: resolution=merge-duplicates` do PostgREST parece um merge, mas é um
+ * INSERT que substitui a linha inteira: coluna que você não mandou volta para o DEFAULT. Cadastrar
+ * um gatilho num post já sincronizado apagaria o `permalink`, o `caption` e o `media_type` dele.
+ * Por isso: existe → PATCH (toca só no que veio); não existe → INSERT.
+ */
 export async function salvarGatilho(linha) {
-  const [gravada] = await rest('?on_conflict=post_id', {
+  const [existente] = await rest(`?post_id=eq.${linha.post_id}&select=post_id`);
+  if (existente) {
+    const { post_id, ...campos } = linha;
+    // Os dados do post (o que o `sincronizar` descobre) só entram se vieram preenchidos — null aqui
+    // significa "não sei", não "apague". Já os três campos da PROMESSA passam mesmo nulos: é assim
+    // que `set` sem `--resposta` desliga uma resposta pública que existia antes.
+    const DESCOBERTOS = ['conta', 'permalink', 'media_type', 'caption', 'publicado_em'];
+    for (const k of DESCOBERTOS) if (campos[k] == null) delete campos[k];
+    const [atualizada] = await rest(`?post_id=eq.${post_id}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify(campos),
+    });
+    return atualizada;
+  }
+  const [criada] = await rest('', {
     method: 'POST',
-    headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+    headers: { Prefer: 'return=representation' },
     body: JSON.stringify([linha]),
   });
-  return gravada;
+  return criada;
 }
 
 // ---------------------------------------------------------------------------
