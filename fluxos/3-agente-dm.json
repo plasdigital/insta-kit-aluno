@@ -268,7 +268,7 @@
       "parameters": {
         "operation": "get",
         "propertyName": "Memory1",
-        "key": "={{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "key": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
         "options": {}
       },
       "type": "n8n-nodes-base.redis",
@@ -290,7 +290,7 @@
       "parameters": {
         "operation": "get",
         "propertyName": "Memory2",
-        "key": "={{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
+        "key": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}",
         "options": {}
       },
       "type": "n8n-nodes-base.redis",
@@ -424,7 +424,7 @@
     {
       "parameters": {
         "operation": "delete",
-        "key": "={{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}"
+        "key": "=ig:buf:{{ $('Dados da Mensagem').first().json.data.contato }}{{ $('Dados da Mensagem').item.json.data.from_me }}"
       },
       "type": "n8n-nodes-base.redis",
       "typeVersion": 1,
@@ -671,7 +671,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const text = $input.first().json.output;\n\n// Substitui \\n literais por quebras reais\nconst normalizedText = text.replace(/\\\\n/g, '\\n');\n\n// Divide por blocos de parágrafos\nconst parts = normalizedText.split(/\\n{2,}/);\n\nconst results = [];\n\nfor (const part of parts) {\n  // Regex para links que começam com https:// e terminam com extensão de mídia\n  const urlRegex = /(https:\\/\\/\\S+\\.(?:mp4|png|webp|jpg|jpeg|mp3|ogg|pdf|docx|xlsx|doc))/gi;\n\n  // Extrai os links\n  const links = [...part.matchAll(urlRegex)].map(match => match[1]);\n\n  // Remove todos os links do texto original\n  const cleanedText = part.replace(urlRegex, '').trim();\n\n  // Adiciona texto limpo, se houver\n  if (cleanedText.length > 0) {\n    results.push({ json: { output: cleanedText } });\n  }\n\n  // Adiciona cada link individualmente\n  for (const link of links) {\n    results.push({ json: { output: link } });\n  }\n}\n\nreturn results;"
+        "jsCode": "const LIMITE_BYTES = 950; // a API do Instagram aceita 1000 bytes por mensagem\nconst bytes = (s) => encodeURIComponent(String(s)).replace(/%[0-9A-F]{2}/gi, 'x').length;\nconst corta = (s) => {\n  let out = '', n = 0;\n  for (const ch of String(s)) {\n    const b = bytes(ch);\n    if (n + b > LIMITE_BYTES) return out.trimEnd() + '...';\n    out += ch; n += b;\n  }\n  return out;\n};\n\nconst text = $input.first().json.output;\nconst normalizedText = String(text).replace(/\\\\n/g, '\\n');\nconst parts = normalizedText.split(/\\n{2,}/);\nconst results = [];\n\nfor (const part of parts) {\n  const urlRegex = /(https:\\/\\/\\S+\\.(?:mp4|png|webp|jpg|jpeg|mp3|ogg|pdf|docx|xlsx|doc))/gi;\n  const links = [...part.matchAll(urlRegex)].map(m => m[1]);\n  const cleanedText = part.replace(urlRegex, '').trim();\n  if (cleanedText.length > 0) results.push({ json: { output: corta(cleanedText) } });\n  for (const link of links) results.push({ json: { output: link } });\n}\n\nreturn results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -690,7 +690,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: (t => { const b = Buffer.from(String(t), 'utf8'); return b.length > 990 ? b.subarray(0,990).toString('utf8').replace(/\\uFFFD+$/,'') + '...' : String(t); })($('Loop de Mensagens').item.json.output) } }) }}",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: String($('Loop de Mensagens').item.json.output) } }) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -1576,6 +1576,7 @@
             "typeValidation": "loose",
             "version": 3
           },
+          "combinator": "and",
           "conditions": [
             {
               "id": "nao-foi-o-bot",
@@ -1587,8 +1588,7 @@
                 "singleValue": true
               }
             }
-          ],
-          "combinator": "and"
+          ]
         },
         "options": {}
       },
@@ -2533,6 +2533,219 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "name": "Clicou num Botão?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4180,
+        1216
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "tem-payload",
+              "leftValue": "={{ $('Dados da Mensagem').first().json.data.payload }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "40bb8c97-90c7-475a-8088-f7974a95d286"
+    },
+    {
+      "name": "Resposta do Botão",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4384,
+        1408
+      ],
+      "parameters": {
+        "jsCode": "// EDITE AQUI o que cada botao responde. Limite da API: 1000 bytes por mensagem.\nconst RESPOSTAS = {\n  DUVIDA: 'Manda a duvida aqui que eu te respondo.\\n\\nSe for sobre algum video do canal, me diz qual que eu te situo.',\n  ORCAMENTO: 'Boa! Pra eu passar pro <SEU NOME> com contexto, me conta 3 coisas:\\n\\n1) o que a sua empresa faz\\n2) o que voce quer automatizar\\n3) que ferramenta voce ja usa hoje',\n  CURSOS: '<O QUE VOCE VENDE — uma ou duas linhas e o seu link>',\n  ALUNO: 'Show! Se travou em alguma aula ou nao conseguiu acessar, me conta o que aconteceu que eu te ajudo.',\n  HUMANO: 'Fechou, ja avisei o <SEU NOME>. Pode deixar sua mensagem aqui que ele responde por este direct.'\n};\n\nconst payload = String($('Dados da Mensagem').first().json.data.payload || '').trim().toUpperCase();\nconst output = RESPOSTAS[payload] || 'Nao entendi essa opcao. Me conta com suas palavras o que voce precisa.';\n\nreturn [{ json: { payload, output, pausar: payload === 'HUMANO' } }];"
+      },
+      "id": "789b850f-9919-4630-b4bb-42c11d168720"
+    },
+    {
+      "name": "Marca Escolha",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4576,
+        1408
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "operation": "update",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').first().json.data.contato }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ultima_escolha",
+              "fieldValue": "={{ $('Resposta do Botão').first().json.payload }}"
+            },
+            {
+              "fieldId": "quente",
+              "fieldValue": "={{ $('Resposta do Botão').first().json.payload === 'ORCAMENTO' || $('Busca Lead').first().json.quente === true }}"
+            }
+          ]
+        }
+      },
+      "id": "9d8aa88f-51a9-420e-b7e8-800acde2d30c"
+    },
+    {
+      "name": "É Falar com o <SEU NOME>?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4752,
+        1408
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "e-humano",
+              "leftValue": "={{ $('Resposta do Botão').first().json.pausar }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d95bd41f-125a-40e0-bff8-f408f131db7b"
+    },
+    {
+      "name": "Pausa Bot (Botão)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4928,
+        1536
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "<SUA MARCA> Oficial"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "operation": "update",
+        "tableId": "ig_contato_dm",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "sender_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Dados da Mensagem').first().json.data.contato }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "bot_ativo",
+              "fieldValue": "={{ false }}"
+            }
+          ]
+        }
+      },
+      "id": "0ab6aba1-4467-4cba-adb0-018d883bb84e"
+    },
+    {
+      "name": "Envia Resposta do Botão",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5152,
+        1408
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "IG Token @seu_usuario"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.instagram.com/v23.0/me/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $('Dados da Mensagem').first().json.data.contato }, message: { text: String($('Resposta do Botão').first().json.output) } }) }}",
+        "options": {}
+      },
+      "id": "b4fcfe63-a0f4-4615-93d7-26191d853c6c"
+    },
+    {
+      "name": "Marca Mid do Aviso",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4620,
+        1000
+      ],
+      "credentials": {
+        "redis": {
+          "id": "TROQUE-PELA-SUA-CREDENCIAL",
+          "name": "Redis DB5"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "operation": "set",
+        "key": "=ig:bot:{{ $json.message_id }}",
+        "value": "1",
+        "expire": true,
+        "ttl": 7200
+      },
+      "id": "c2dcd006-1f40-4171-8aff-459d5b98f927"
     }
   ],
   "connections": {
@@ -2989,7 +3202,13 @@
     },
     "Avisa Reiniciado": {
       "main": [
-        []
+        [
+          {
+            "node": "Marca Mid do Aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Salva Fala do Humano": {
@@ -3186,7 +3405,7 @@
       "main": [
         [
           {
-            "node": "Loop de Mensagens",
+            "node": "Marca Mid do Bot",
             "type": "main",
             "index": 0
           }
@@ -3197,7 +3416,7 @@
       "main": [
         [
           {
-            "node": "Loop de Mensagens",
+            "node": "Marca Mid do Bot",
             "type": "main",
             "index": 0
           }
@@ -3208,7 +3427,7 @@
       "main": [
         [
           {
-            "node": "Loop de Mensagens",
+            "node": "Marca Mid do Bot",
             "type": "main",
             "index": 0
           }
@@ -3219,7 +3438,7 @@
       "main": [
         [
           {
-            "node": "Loop de Mensagens",
+            "node": "Marca Mid do Bot",
             "type": "main",
             "index": 0
           }
@@ -3231,6 +3450,11 @@
         [
           {
             "node": "Pausa por Limite",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Marca Mid do Aviso",
             "type": "main",
             "index": 0
           }
@@ -3344,7 +3568,7 @@
         ],
         [
           {
-            "node": "Agente",
+            "node": "Clicou num Botão?",
             "type": "main",
             "index": 0
           }
@@ -3356,6 +3580,102 @@
         [
           {
             "node": "Marca Menu Enviado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Marca Mid do Aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clicou num Botão?": {
+      "main": [
+        [
+          {
+            "node": "Resposta do Botão",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta do Botão": {
+      "main": [
+        [
+          {
+            "node": "Marca Escolha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marca Escolha": {
+      "main": [
+        [
+          {
+            "node": "É Falar com o <SEU NOME>?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É Falar com o <SEU NOME>?": {
+      "main": [
+        [
+          {
+            "node": "Pausa Bot (Botão)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Envia Resposta do Botão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pausa Bot (Botão)": {
+      "main": [
+        [
+          {
+            "node": "Envia Resposta do Botão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Resposta do Botão": {
+      "main": [
+        [
+          {
+            "node": "Marca Mid do Aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisa Tipo Não Suportado": {
+      "main": [
+        [
+          {
+            "node": "Marca Mid do Aviso",
             "type": "main",
             "index": 0
           }

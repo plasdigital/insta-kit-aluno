@@ -138,7 +138,7 @@ if (ehModuloPrincipal) {
     for (const l of comGatilho) {
       console.log(`   ${l.post_id}  ${(l.key_word || '').padEnd(12)}${corta(l.direct_message, 46)}`);
       console.log(`   ${' '.repeat(18)}  ${l.comment_reply ? 'público: ' + corta(l.comment_reply, 34) : 'só DM'}` +
-        (l.permalink ? `  ·  ${l.permalink}` : ''));
+        `  ·  ${l.permalink || "⚠️  sem link — rode: sincronizar"}`);
     }
     const sem = linhas.length - comGatilho.length;
     if (sem) console.log(`\n   + ${sem} post(s) cadastrado(s) sem palavra-chave — não disparam nada.`);
@@ -215,24 +215,66 @@ if (ehModuloPrincipal) {
       alvo = r.paging.next; params = null;   // o cursor já vem com tudo dentro
     }
 
-    const existentes = new Set((await rest('?select=post_id')).map(l => l.post_id));
-    const novos = posts.filter(p => !existentes.has(p.id));
-    console.log(`\n🔄 @${username}: ${posts.length} posts na conta · ${existentes.size} já na tabela · ${novos.length} a cadastrar`);
+    // A tabela inteira, não só os ids: assim dá para ver quem está desatualizado e quem virou órfã.
+    const linhas = await rest('?select=*');
+    const naTabela = new Map(linhas.map(l => [l.post_id, l]));
+    const novos = posts.filter(p => !naTabela.has(p.id));
+
+    // ⚠️ A primeira versão disto só cadastrava post NOVO, e linha antiga nunca era revisitada:
+    // um post cadastrado à mão, incompleto, ficava incompleto para sempre — inclusive um COM
+    // GATILHO LIGADO e sem `permalink`, que o `listar` não tinha como mostrar. Sincronizar não é
+    // importar o que falta, é fazer os dois lados baterem. A PROMESSA
+    // (key_word/direct_message/comment_reply) nunca é tocada aqui: ela é do dono, não da API.
+    const descobertos = p => ({
+      conta: username, media_type: p.media_type, permalink: p.permalink || null,
+      caption: p.caption || null, publicado_em: p.timestamp || null,
+    });
+    const desatualizados = [];
+    for (const p of posts) {
+      const l = naTabela.get(p.id);
+      if (!l) continue;
+      // null da API é "não sei", nunca "apague" — mesma regra do salvarGatilho.
+      // `publicado_em` compara como DATA: a Graph API devolve `+0000` e o Postgres normaliza para
+      // `+00:00`, então comparar as duas strings marcaria TODO post como sujo, para sempre.
+      const mudou = Object.entries(descobertos(p)).filter(([k, v]) => {
+        if (v == null) return false;
+        if (k === 'publicado_em') return !l[k] || new Date(l[k]).getTime() !== new Date(v).getTime();
+        return String(l[k] ?? '') !== String(v);
+      });
+      if (mudou.length) desatualizados.push({ id: p.id, campos: Object.fromEntries(mudou) });
+    }
+
+    // Órfã: está na tabela e não está mais na conta (post apagado ou arquivado). NÃO se apaga
+    // sozinha — com gatilho é promessa morta e a decisão é do dono; sem gatilho é lixo inofensivo.
+    const naConta = new Set(posts.map(p => p.id));
+    const orfas = linhas.filter(l => !naConta.has(l.post_id));
+
+    console.log(`\n🔄 @${username}: ${posts.length} posts na conta · ${linhas.length} linhas na tabela`);
+    console.log(`   ${novos.length} a cadastrar · ${desatualizados.length} a atualizar · ${orfas.length} órfã(s)`);
     for (const p of novos.slice(0, 10)) console.log(`   + ${p.id}  ${p.media_type.padEnd(16)}${p.permalink || ''}`);
     if (novos.length > 10) console.log(`   … e mais ${novos.length - 10}`);
-    if (!novos.length) { console.log('\n✅ nada a fazer — a tabela já tem todos.\n'); process.exit(0); }
+    for (const d of desatualizados.slice(0, 10)) console.log(`   ~ ${d.id}  ${Object.keys(d.campos).join(', ')}`);
+    if (desatualizados.length > 10) console.log(`   … e mais ${desatualizados.length - 10}`);
+    for (const o of orfas) console.log(`   ! ${o.post_id}  não está mais na conta` +
+      (o.key_word ? `  ⚠️  gatilho "${o.key_word}" apontando para o nada` : ''));
+    if (!novos.length && !desatualizados.length) { console.log('\n✅ nada a fazer — a tabela já está em dia.\n'); process.exit(0); }
     if (!tem('confirmar')) { console.log('\n⏸️  NADA foi gravado. Repita com --confirmar.\n'); process.exit(0); }
 
-    // upsert com merge: post que já existe NÃO perde a key_word que alguém cadastrou
-    await rest('?on_conflict=post_id', {
-      method: 'POST',
-      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(novos.map(p => ({
-        post_id: p.id, conta: username, media_type: p.media_type,
-        permalink: p.permalink || null, caption: p.caption || null, publicado_em: p.timestamp || null,
-      }))),
-    });
-    console.log(`\n✅ ${novos.length} post(s) cadastrado(s), sem palavra-chave — nenhum dispara nada ainda.`);
+    if (novos.length) {
+      // upsert com merge: post que já existe NÃO perde a key_word que alguém cadastrou
+      await rest('?on_conflict=post_id', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(novos.map(p => ({ post_id: p.id, ...descobertos(p) }))),
+      });
+    }
+    // PATCH um a um, só nos campos que mudaram: merge-duplicates aqui apagaria a promessa
+    for (const d of desatualizados) {
+      await rest(`?post_id=eq.${d.id}`, {
+        method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(d.campos),
+      });
+    }
+    console.log(`\n✅ ${novos.length} cadastrado(s) · ${desatualizados.length} atualizado(s). Nenhum gatilho foi tocado.`);
     console.log('   Ligue um: node comentarios/gatilhos.mjs set <post_id> --palavra X --dm "..." --confirmar\n');
     process.exit(0);
   }

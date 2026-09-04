@@ -68,7 +68,8 @@ node comentarios/gatilhos.mjs listar                     o que está no ar
 node comentarios/gatilhos.mjs ver <post_id|url>          uma linha
 node comentarios/gatilhos.mjs set <post_id|url> --palavra TEMPLATE --dm "..." --confirmar
 node comentarios/gatilhos.mjs tirar <post_id> --confirmar
-node comentarios/gatilhos.mjs sincronizar --confirmar    cadastra os posts que já estavam no ar
+node comentarios/gatilhos.mjs sincronizar                confere a tabela contra a conta (não grava)
+node comentarios/gatilhos.mjs sincronizar --confirmar    grava
 ```
 
 > **Isto já foi um fluxo do n8n** que importava os posts com a miniatura, para alguém olhar a grade
@@ -76,6 +77,28 @@ node comentarios/gatilhos.mjs sincronizar --confirmar    cadastra os posts que j
 > miniatura deixa de pagar uma ferramenta e um fluxo a mais. Vale a pergunta no seu caso: **essa
 > tabela vai ser lida por gente?** Se sim, uma ferramenta com grade e miniatura é ótima. Se não,
 > ela é peso.
+
+### O sincronizar faz três coisas, e uma ele não faz
+
+| | |
+|---|---|
+| **cadastra** | post que está na conta e não está na tabela |
+| **atualiza** | linha que existe com campo desatualizado (link, tipo, legenda, data) — campo a campo |
+| **denuncia** | linha órfã: está na tabela e **não está mais na conta** (post apagado ou arquivado). Com gatilho ligado, é promessa apontando para o nada |
+| ❌ **não toca** | `key_word`, `direct_message` e `comment_reply`. A promessa é do dono; a API não tem opinião sobre ela. E **não apaga órfã sozinho** — mostra e deixa a decisão com quem manda |
+
+⚠️ **A armadilha que este comando já teve, e que vale para qualquer sincronização:** a primeira
+versão só procurava post **novo**. Linha que já existia nunca era revisitada — então um post
+cadastrado à mão, incompleto, ficava incompleto para sempre, e rodar de novo respondia *"a tabela já
+tem todos"*. **Sincronizar não é importar o que falta: é fazer os dois lados baterem.**
+
+Duas regras que saíram daí e que você vai reencontrar em qualquer integração com API:
+
+- **`null` da API é "não sei", nunca "apague".** Campo que volta vazio não sobrescreve o que está
+  gravado. Sem isso, uma resposta incompleta da API limpa a sua tabela.
+- **Data se compara como data, não como texto.** A Graph API devolve `...+0000` e o Postgres
+  normaliza para `...+00:00`. As duas strings são diferentes e o instante é o mesmo — comparando
+  texto, todo post fica "sujo" para sempre e o script nunca diz que está em dia.
 
 ## As três camadas do filtro
 

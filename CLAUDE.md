@@ -27,7 +27,7 @@ comandos read-only** (`perfil.mjs`, `diagnostico.mjs`) e montar a prévia sem `-
 | "como foi o post?" · "quantas curtidas?" | `node metricas/metricas.mjs` |
 | "como foi minha semana?" | `node metricas/boletim.mjs TESTE --dias 7` |
 | "quem já falou comigo na DM?" | `node agente-dm/contatos.mjs` |
-| "que posts têm gatilho ligado?" | `node comentarios/gatilhos.mjs listar` |
+| "que posts têm gatilho ligado?" | `node comentarios/gatilhos.mjs listar` (⚠️ *sem link* = rode o `sincronizar`) |
 
 ### Publicar (🔴 exige confirmação — ver seção 3)
 
@@ -54,7 +54,7 @@ que vai ao ar. **Rode sempre sem `--confirmar` primeiro.**
 | "bloqueia o fulano no bot" | `node agente-dm/contatos.mjs bloquear @fulano` |
 | "liga o gatilho nesse post" | `node comentarios/gatilhos.mjs set <post_id\|url> --palavra X --dm "..." --confirmar` |
 | "tira o gatilho desse post" | `node comentarios/gatilhos.mjs tirar <post_id> --confirmar` |
-| "cadastra os posts que já estão no ar" | `node comentarios/gatilhos.mjs sincronizar --confirmar` |
+| "cadastra os posts que já estão no ar" · "confere se a tabela está certa" | `node comentarios/gatilhos.mjs sincronizar` → mostra o que faria; repita com `--confirmar` |
 | "carrega quem já me mandou DM" | `node agente-dm/precarga.mjs TESTE` |
 
 ### O que roda no n8n, não aqui
@@ -62,10 +62,36 @@ que vai ao ar. **Rode sempre sem `--confirmar` primeiro.**
 A automação de **comentários** e o **agente de DM** são fluxos, não scripts: importe os JSONs de
 `fluxos/` no n8n. Esta pasta só guarda os arquivos e a documentação deles.
 
-⚠️ **A tabela de gatilhos é a exceção, e é sua.** Os fluxos só LEEM dela; quem escreve é o
-`publicar.mjs --gatilho` e o `comentarios/gatilhos.mjs`. Se o dono publicar um post prometendo
-"comenta X" sem cadastrar o gatilho, **nada acontece e nada reclama** — o fluxo termina em verde.
-Ao publicar com uma promessa na legenda, cadastre o gatilho no mesmo comando.
+⚠️ **A tabela de gatilhos é a exceção, e é sua.** Os fluxos só LEEM dela; **quem escreve é você**,
+pelo `publicar.mjs --gatilho` e pelo `comentarios/gatilhos.mjs`. Essa é a forma do projeto:
+
+```
+   API do Instagram  ──▶  [ você, por comando ]  ──▶  tabela de gatilhos
+                           sincronizar · set · tirar          │
+                                                              ▼
+                        comentário chega  ──▶  [ n8n ]  ──lê──▶  a linha do post
+```
+
+O n8n não importa post e não escreve nada — ele recebe o comentário, procura a linha, compara a
+palavra-chave e manda a DM. Manter a tabela igual à conta é **trabalho seu**:
+
+| Quando | O que fazer |
+|---|---|
+| o dono pede a lista de gatilhos | `gatilhos.mjs listar`. Linha com **⚠️ sem link** significa tabela desatualizada → sincronize |
+| o dono pede "confere se está tudo certo" | `gatilhos.mjs sincronizar` (mostra o que faria), depois `--confirmar` |
+| o dono publicou pelo celular | idem — o post só entra na tabela pelo sincronizar |
+| o dono pede o gatilho num post que já está no ar | `gatilhos.mjs set <url do post> --palavra X --dm "..." --confirmar` |
+| o dono vai publicar prometendo "comenta X" | cadastre no mesmo comando: `publicar.mjs --gatilho X --dm "..."` |
+
+O `sincronizar` **nunca toca na promessa** (palavra-chave, DM e resposta pública são do dono, a API
+não tem opinião sobre elas) e **nunca apaga linha órfã** sozinho — post apagado com gatilho ligado
+ele mostra e deixa a decisão com o dono.
+
+Se o dono publicar um post prometendo "comenta X" sem cadastrar o gatilho, **nada acontece e nada
+reclama** — o fluxo termina em verde.
+
+📌 **Post se identifica pelo link, nunca pelo id.** Ao listar posts, gatilhos ou métricas, mostre
+sempre o `permalink`: id de mídia não abre no navegador e não diz nada para quem olha.
 
 ---
 
